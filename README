@@ -1,4 +1,4 @@
-Application to manage data of an Oracle NoSQL database, community edition.
+Script to manage data of an Oracle NoSQL database, community edition.
 
 Requisites:
 1. Oracle NoSQL community edition, version 1.2.123, up & running.
@@ -13,14 +13,18 @@ Usage:
 2. On a command prompt, type
    /absolute/path/jython -i /absolute/path/jython_oraclenosql.py
 3. Assuming above created Jython's console and 
-   preloaded jython_oraclenosql.py, now you can type:
-   
+   preloaded jython_oraclenosql.py, you can type:
+
    connect("oracle_store_name","host:port")
+   countAll()
+   version()
+   
    put("Key1/Key2/-/MinorKey1","Value")
    get("Key1/Key2/-/MinorKey1")
    delete("Key1/Key2/-/MinorKey1")
-   countAll()
+   multiDelete("Key1")
    storeIterator ("Key1")
+
    
 
 

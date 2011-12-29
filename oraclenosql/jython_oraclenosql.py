@@ -19,6 +19,7 @@ global store
 global myKey
 global myValue
 global errorMessage
+errorMessage = ""
 
 def _validateConnectionString (connectionString):
     # connectionString should be string:integer.
@@ -184,13 +185,30 @@ def delete (keysString):
         return
     store.delete (myKey)
     return
+    
+def multiDelete (keysString):
+    # To delete multiple records sharing the same major path components.
+    # e.g. multiDelete ("Test/HelloWorld/Java/")
+    global myKey
+    myKey = _prepareKey (keysString)
+    global errorMessage
+    if (errorMessage != ""):
+        print (errorMessage)
+        errorMessage = ""
+        return
+    errorMessage = _checkStore ()
+    if (errorMessage != ""):
+        print (errorMessage)
+        errorMessage = ""
+        return
+    store.multiDelete (myKey, None, None)
+    return
 
 def storeIterator (keysString):
     # This only works for iterating over major components.
     # Usage: storeIterator ("Test/HelloWorld")
     global errorMessage
     global myKey
-    global myValue
     myKey = _prepareKey (keysString)
     if (errorMessage != ""):
         print (errorMessage)
@@ -203,8 +221,10 @@ def storeIterator (keysString):
         return
     iterator = store.storeIterator (Direction.UNORDERED, 0, myKey, None, None)    
     while (iterator.hasNext ()):
-        value = iterator.next ().getValue ().getValue ().tostring ()
-        print (value)
+        element = iterator.next ()
+        key = element.getKey().toString()
+        value = element.getValue ().getValue ().tostring ()
+        print (key + ", "  + value)
     return
 
 def countAll ():
@@ -220,3 +240,6 @@ def countAll ():
         i = i + 1
         iterator.next ()            
     print ("Total number of Records: " + str(i))
+
+def version ():
+    print ("0.1")
