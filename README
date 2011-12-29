@@ -13,7 +13,7 @@ Usage:
 2. On a command prompt, type
    /absolute/path/jython -i /absolute/path/jython_oraclenosql.py
 3. Assuming above created Jython's console and 
-   preloaded jython_oraclenosql.py.py, now you can type:
+   preloaded jython_oraclenosql.py, now you can type:
    
    connect("oracle_store_name","host:port")
    put("Key1/Key2/-/MinorKey1","Value")
