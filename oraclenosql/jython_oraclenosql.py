@@ -20,7 +20,13 @@ global store
 global myKey
 global myValue
 global errorMessage
+global positiveMessage
+global nFunctionsPassedTest
+global nFunctionsTested
 errorMessage = ""
+positiveMessage = ""
+nFunctionsPassedTest = 0
+nFunctionsTested = 0
 
 def _validateConnectionString(connectionString):
     # connectionString should be string:integer.
@@ -42,6 +48,9 @@ def connect(storeName, connectionString):
     # Catch a java exception.
     # http://stackoverflow.com/questions/2045786/how-to-catch-an-exception
     #     -in-python-and-get-a-reference-to-the-exception-withou
+    global errorMessage
+    global positiveMessage
+    global store
     if not isinstance(storeName, str):
         print ("ERROR: Please enter a String as the name of the store.")
         return
@@ -53,22 +62,21 @@ def connect(storeName, connectionString):
         storeName = "mystore"
     if (connectionString == ""): 
         connectionString = "localhost:5000"
-    global errorMessage
     errorMessage = _validateConnectionString(connectionString)
     if (errorMessage != ""):
         print errorMessage
         errorMessage = ""
         return
     hosts = [connectionString]
-    global store
     try:
         kVStoreConfig = KVStoreConfig(storeName, hosts)
         store = KVStoreFactory.getStore(kVStoreConfig)
         message = "Connected to the Oracle NoSQL store: \"" + storeName + "\"."
         print message
+        positiveMessage = "connect: passed"
     except:
         instance = sys.exc_info()[1]
-        errorMessage = "Error connecting to the store: " + str(instance)
+        errorMessage = "ERROR: Connection to the store: " + str(instance)
         print errorMessage
         errorMessage = ""
     return
@@ -127,6 +135,7 @@ def _storeFunctions(what, keysString, valueString):
     # store.delete(key) returns a bool.
     # store.get returns None or the value.
     global errorMessage
+    global positiveMessage
     global myKey
     global myValue
     myKey = _prepareKey(keysString)
@@ -157,6 +166,7 @@ def _storeFunctions(what, keysString, valueString):
         else:
             myValue = Value.createValue(jarray.array(valueString, 'b'))
             store_function(myKey, myValue)
+        positiveMessage = what + ": passed"
     except:
         instance = sys.exc_info()[1]
         errorMessage = "Error in store operation: " + str(instance)
@@ -192,13 +202,14 @@ def delete(keysString):
     valueString = ""
     _storeFunctions(what, keysString, valueString)
     return
-    
+
 def multiDelete(keysString):
     # To delete multiple records sharing the same major path components.
     # e.g. multiDelete("Test/HelloWorld/Java/")
+    global errorMessage
+    global positiveMessage
     global myKey
     myKey = _prepareKey(keysString)
-    global errorMessage
     if (errorMessage != ""):
         print (errorMessage)
         errorMessage = ""
@@ -208,13 +219,22 @@ def multiDelete(keysString):
         print (errorMessage)
         errorMessage = ""
         return
-    store.multiDelete(myKey, None, None)
+    try:
+        store.multiDelete(myKey, None, None)
+        positiveMessage = "multiDelete: passed"
+    except:
+        instance = sys.exc_info()[1]
+        errorMessage = "Error in multiDelete: " + str(instance)
+        print errorMessage
+        errorMessage = ""
+        return        
     return
 
 def storeIterator(keysString):
     # This only works for iterating over major components.
     # Usage: storeIterator("Test/HelloWorld")
     global errorMessage
+    global positiveMessage
     global myKey
     myKey = _prepareKey(keysString)
     if (errorMessage != ""):
@@ -226,27 +246,89 @@ def storeIterator(keysString):
         print (errorMessage)
         errorMessage = ""
         return
-    iterator = store.storeIterator(Direction.UNORDERED, 0, myKey, None, None)    
-    while (iterator.hasNext()):
-        element = iterator.next()
-        key = element.getKey().toString()
-        value = element.getValue().getValue().tostring()
-        print (key + ", "  + value)
+    try:
+        iterator = store.storeIterator(Direction.UNORDERED, 0, myKey, None, None)    
+        while (iterator.hasNext()):
+            element = iterator.next()
+            key = element.getKey().toString()
+            value = element.getValue().getValue().tostring()
+            print (key + ", "  + value)
+        positiveMessage = "storeIterator: passed"
+    except:
+        instance = sys.exc_info()[1]
+        errorMessage = "Error in storeIterator: " + str(instance)
+        print errorMessage
+        errorMessage = ""
+        return            
     return
 
 def countAll():
     global errorMessage
+    global positiveMessage
     errorMessage = _checkStore()
     if (errorMessage != ""):
         print (errorMessage)
         errorMessage = ""
         return 
-    iterator = store.storeKeysIterator(Direction.UNORDERED, 0)
-    i = 0
-    while (iterator.hasNext()):
-        i = i + 1
-        iterator.next()            
-    print ("Total number of Records: " + str(i))
+    try:
+        iterator = store.storeKeysIterator(Direction.UNORDERED, 0)
+        i = 0
+        while (iterator.hasNext()):
+            i = i + 1
+            iterator.next()            
+        print ("Total number of Records: " + str(i))
+        positiveMessage = "countAll: passed"
+    except:
+        instance = sys.exc_info()[1]
+        errorMessage = "Error in countAll(): " + str(instance)
+        print errorMessage
+        errorMessage = ""
+        return
+    return
 
 def version():
-    print ("0.1.1")
+    print ("0.1.2")
+
+def _evalPositiveMessage():
+    global positiveMessage
+    global nFunctionsPassedTest
+    global nFunctionsTested
+    if (positiveMessage is not ""):
+        print (positiveMessage)
+        nFunctionsPassedTest = nFunctionsPassedTest + 1
+    else:
+        print ("NOT PASSED")
+    positiveMessage = ""
+    nFunctionsTested = nFunctionsTested + 1
+    return    
+
+def test(storeName, connectionString):
+    # Test all functions.
+    global positiveMessage
+    global nFunctionsPassedTest
+    global nFunctionsTested
+    nFunctionsPassedTest = 0
+    nFunctionsTested = 0
+    connect(storeName, connectionString)
+    _evalPositiveMessage()
+    put("MyTest/MComp2/-/mComp1/mComp2","Johannes Laeufer")
+    _evalPositiveMessage()
+    get("MyTest/MComp2/-/mComp1/mComp2")
+    _evalPositiveMessage()
+    delete("MyTest/MComp2/-/mComp1/mComp2")
+    _evalPositiveMessage()
+    countAll()
+    _evalPositiveMessage()
+    putIfAbsent("MyTest/MComp2/-/mComp1/mComp2","Juanito el Caminante")
+    _evalPositiveMessage()
+    putIfPresent("MyTest/MComp2/-/mComp1/mComp2","Corralejo")
+    _evalPositiveMessage()
+    storeIterator("MyTest/MComp2")
+    _evalPositiveMessage()
+    multiDelete("MyTest/MComp2")
+    _evalPositiveMessage()  
+    print (str(nFunctionsPassedTest) + " functions passed out of " + \
+        str(nFunctionsTested))
+    nFunctionsPassedTest = 0
+    nFunctionsTested = 0    
+    return
