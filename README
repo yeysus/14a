@@ -1,4 +1,4 @@
-Script to manage data of an Oracle NoSQL database, community edition.
+Script to manipulate String data of an Oracle NoSQL database, community edition.
 
 Requisites:
 1. Oracle NoSQL community edition, version 1.2.123, up & running.
@@ -15,15 +15,17 @@ Usage:
 3. Assuming above created Jython's console and 
    preloaded jython_oraclenosql.py, you can type:
 
-   connect("oracle_store_name","host:port")
+   connect("oracle_store_name", "host:port")
    countAll()
    version()
-   
-   put("Key1/Key2/-/MinorKey1","Value")
-   get("Key1/Key2/-/MinorKey1")
-   delete("Key1/Key2/-/MinorKey1")
-   multiDelete("Key1")
-   storeIterator ("Key1")
+
+   putIfPresent("MajorComponent1/MajorComponent2/-/MinorComponent1","Value")
+   putIfAbsent("MajorComponent1/MajorComponent2/-/MinorComponent1","Value")   
+   put("MajorComponent1/MajorComponent2/-/MinorComponent1","Value")
+   get("MajorComponent1/MajorComponent2/-/MinorComponent1")
+   delete("MajorComponent1/MajorComponent2/-/MinorComponent1")
+   multiDelete("MajorComponent1") 
+   storeIterator ("MajorComponent1")
 
    
 

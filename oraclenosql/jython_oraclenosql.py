@@ -1,8 +1,9 @@
-# Jython file.
+# Jython script to manipulate data in Oracle NoSQL databases, community edition.
 import sys
 sys.path.append('/opt/kv-1.2.123/lib/kvstore-1.2.123.jar')
 sys.path.append('/opt/kv-1.2.123/lib/je.jar')
 import jarray
+import inspect
 from oracle.kv import KVStore
 from oracle.kv import KVStoreConfig
 from oracle.kv import KVStoreFactory
@@ -21,11 +22,11 @@ global myValue
 global errorMessage
 errorMessage = ""
 
-def _validateConnectionString (connectionString):
+def _validateConnectionString(connectionString):
     # connectionString should be string:integer.
     global errorMessage
     errorMessage = ""
-    myArray = connectionString.split (":")
+    myArray = connectionString.split(":")
     if (len(myArray) != 2):
         errorMessage = "ERROR: The connection string must include the host name \n"
         errorMessage += "and the port in the form host:port.\n"
@@ -37,11 +38,11 @@ def _validateConnectionString (connectionString):
         errorMessage = "ERROR: The port must be an Integer."
     return errorMessage
 
-def connect (storeName, connectionString):
+def connect(storeName, connectionString):
     # Catch a java exception.
     # http://stackoverflow.com/questions/2045786/how-to-catch-an-exception
     #     -in-python-and-get-a-reference-to-the-exception-withou
-    if not isinstance (storeName, str):
+    if not isinstance(storeName, str):
         print ("ERROR: Please enter a String as the name of the store.")
         return
     if not isinstance (connectionString, str):
@@ -53,7 +54,7 @@ def connect (storeName, connectionString):
     if (connectionString == ""): 
         connectionString = "localhost:5000"
     global errorMessage
-    errorMessage = _validateConnectionString (connectionString)
+    errorMessage = _validateConnectionString(connectionString)
     if (errorMessage != ""):
         print errorMessage
         errorMessage = ""
@@ -61,8 +62,8 @@ def connect (storeName, connectionString):
     hosts = [connectionString]
     global store
     try:
-        kVStoreConfig = KVStoreConfig (storeName, hosts)
-        store = KVStoreFactory.getStore (kVStoreConfig)
+        kVStoreConfig = KVStoreConfig(storeName, hosts)
+        store = KVStoreFactory.getStore(kVStoreConfig)
         message = "Connected to the Oracle NoSQL store: \"" + storeName + "\"."
         print message
     except:
@@ -72,7 +73,7 @@ def connect (storeName, connectionString):
         errorMessage = ""
     return
 
-def _checkStore ():
+def _checkStore():
     global errorMessage
     errorMessage = ""  
     try:
@@ -81,11 +82,11 @@ def _checkStore ():
     except:
         errorMessage = "ERROR: Define your store connection first. \n"
         errorMessage += "Type: \n"
-        errorMessage += "connect (\"Store_Name\", \"Connection_String\")\n."
-        errorMessage += "e.g. connect (\"mystore\",\"localhost:5000\")"
+        errorMessage += "connect(\"Store_Name\", \"Connection_String\")\n."
+        errorMessage += "e.g. connect(\"mystore\",\"localhost:5000\")"
     return errorMessage
 
-def _prepareKey (keysString):
+def _prepareKey(keysString):
     # e.g. keysString = "Test/HelloWorld/Java/-/message_text"
     # myKey contains either an error message or a Key.
     global myKey
@@ -95,151 +96,157 @@ def _prepareKey (keysString):
     if not isinstance (keysString, str):
         errorMessage = "ERROR: Please enter a String as Key."
         return
-    keysArray = keysString.split ("/")
+    keysArray = keysString.split("/")
     isMajor = True
     for i in range (0, len(keysArray)):
         if (keysArray [i] == "-"):
             isMajor = False
         if (isMajor):
-            majorComponents.add (keysArray [i])
+            majorComponents.add(keysArray [i])
         else:
             if (keysArray [i] != "-"):
                 minorComponents.add (keysArray [i])
     if ((len (majorComponents) > 0) & (len (minorComponents) > 0)):
-        myKey = Key.createKey (majorComponents, minorComponents)
+        myKey = Key.createKey(majorComponents, minorComponents)
     elif ((len (majorComponents) > 0) & (len (minorComponents) <= 0)):
-        myKey = Key.createKey (majorComponents)
+        myKey = Key.createKey(majorComponents)
     else:
         errorMessage = "ERROR: The String could not be transformed to a Key."
         return        
     return myKey   
 
-def get (keysString):
+def get(keysString):
     # e.g. get("Test/HelloWorld/Java/-/message_text")
-    global myKey
-    myKey = _prepareKey (keysString)
-    global errorMessage
-    if (errorMessage != ""):
-        print (errorMessage)
-        errorMessage = ""
-        return
-    errorMessage = _checkStore ()
-    if (errorMessage != ""):
-        print (errorMessage)
-        errorMessage = ""
-        return
-    valueVersion = store.get (myKey)
-    if (valueVersion is None):
-        print ("ERROR: The Key \"" + keysString + "\" was not found.")
-    else:
-        myValue = valueVersion.getValue ().getValue ().tostring ()
-        print (myValue)
+    what = inspect.stack()[0][3]
+    valueString = ""
+    _storeFunctions(what, keysString, valueString)
     return
 
-def _putFamily (keysString, valueString):
-    # Use jarray to convert a String to a Java Bytes Array (String.getBytes()).
+def _storeFunctions(what, keysString, valueString):
+    # Use jarray to convert a String to a Java Bytes Array(String.getBytes()).
+    # store.delete(key) returns a bool.
+    # store.get returns None or the value.
     global errorMessage
     global myKey
     global myValue
-    myKey = _prepareKey (keysString)
+    myKey = _prepareKey(keysString)
     if (errorMessage != ""):
+        print (errorMessage)
+        errorMessage = ""
+        return
+    errorMessage = _checkStore()
+    if (errorMessage != ""):
+        print (errorMessage)
+        errorMessage = ""
         return
     if not isinstance (valueString, str):
         message = "ERROR: Please enter a String as Value."
         print (message)
         return
-    errorMessage = _checkStore ()
-    if (errorMessage != ""):
+    store_function = getattr (store, "%s" % what)
+    try:
+        if ((what == "delete") | (what == "get")):
+            valueVersion = store_function(myKey)
+            if isinstance(valueVersion, bool):
+                print (valueVersion)
+            elif (valueVersion is not None):
+                myValue = valueVersion.getValue().getValue().tostring()
+                print (myValue)
+            else:
+                print (valueVersion)
+        else:
+            myValue = Value.createValue(jarray.array(valueString, 'b'))
+            store_function(myKey, myValue)
+    except:
+        instance = sys.exc_info()[1]
+        errorMessage = "Error in store operation: " + str(instance)
+        print errorMessage
+        errorMessage = ""
         return
-    myValue = Value.createValue (jarray.array (valueString, 'b'))
     return
 
-def put (keysString, valueString):
+def put(keysString, valueString):
     # Usage: on a single line,
-    # put ("Test/HelloWorld/Jython/-/message_text", "Hello World")           
-    # Use jarray to convert a String to a Java Bytes Array (String.getBytes()).
-    _putFamily (keysString, valueString)
-    global errorMessage
-    global myKey
-    global myValue
-    if (errorMessage != ""):
-        print (errorMessage)
-        errorMessage = ""
-        return
-    store.put (myKey, myValue)
+    # put("Test/HelloWorld/Jython/-/message_text", "Hello World") 
+    what = inspect.stack()[0][3]  
+    _storeFunctions(what, keysString, valueString)
     return
 
-def delete (keysString):
-    # e.g. delete ("Test/HelloWorld/Java/-/message_text")
-    global myKey
-    myKey = _prepareKey (keysString)
-    global errorMessage
-    if (errorMessage != ""):
-        print (errorMessage)
-        errorMessage = ""
-        return
-    errorMessage = _checkStore ()
-    if (errorMessage != ""):
-        print (errorMessage)
-        errorMessage = ""
-        return
-    store.delete (myKey)
+def putIfPresent(keysString, valueString):
+    # Usage: on a single line,
+    # putIfPresent("Test/HelloWorld/Jython/-/message_text", "Hello World")           
+    what = inspect.stack()[0][3]  
+    _storeFunctions(what, keysString, valueString)
+    return
+
+def putIfAbsent(keysString, valueString):
+    # Usage: on a single line,
+    # putIfAbsent("Test/HelloWorld/Jython/-/message_text", "Hello World")           
+    what = inspect.stack()[0][3]  
+    _storeFunctions(what, keysString, valueString)
+    return
+
+def delete(keysString):
+    # e.g. delete("Test/HelloWorld/Java/-/message_text")
+    what = inspect.stack()[0][3]
+    valueString = ""
+    _storeFunctions(what, keysString, valueString)
     return
     
-def multiDelete (keysString):
+def multiDelete(keysString):
     # To delete multiple records sharing the same major path components.
-    # e.g. multiDelete ("Test/HelloWorld/Java/")
+    # e.g. multiDelete("Test/HelloWorld/Java/")
     global myKey
-    myKey = _prepareKey (keysString)
+    myKey = _prepareKey(keysString)
     global errorMessage
     if (errorMessage != ""):
         print (errorMessage)
         errorMessage = ""
         return
-    errorMessage = _checkStore ()
+    errorMessage = _checkStore()
     if (errorMessage != ""):
         print (errorMessage)
         errorMessage = ""
         return
-    store.multiDelete (myKey, None, None)
+    store.multiDelete(myKey, None, None)
     return
 
-def storeIterator (keysString):
+def storeIterator(keysString):
     # This only works for iterating over major components.
-    # Usage: storeIterator ("Test/HelloWorld")
+    # Usage: storeIterator("Test/HelloWorld")
     global errorMessage
     global myKey
-    myKey = _prepareKey (keysString)
+    myKey = _prepareKey(keysString)
     if (errorMessage != ""):
         print (errorMessage)
         errorMessage = ""
         return
-    errorMessage = _checkStore ()
+    errorMessage = _checkStore()
     if (errorMessage != ""):
         print (errorMessage)
         errorMessage = ""
         return
-    iterator = store.storeIterator (Direction.UNORDERED, 0, myKey, None, None)    
-    while (iterator.hasNext ()):
-        element = iterator.next ()
+    iterator = store.storeIterator(Direction.UNORDERED, 0, myKey, None, None)    
+    while (iterator.hasNext()):
+        element = iterator.next()
         key = element.getKey().toString()
-        value = element.getValue ().getValue ().tostring ()
+        value = element.getValue().getValue().tostring()
         print (key + ", "  + value)
     return
 
-def countAll ():
+def countAll():
     global errorMessage
-    errorMessage = _checkStore ()
+    errorMessage = _checkStore()
     if (errorMessage != ""):
         print (errorMessage)
         errorMessage = ""
         return 
-    iterator = store.storeKeysIterator (Direction.UNORDERED, 0)
+    iterator = store.storeKeysIterator(Direction.UNORDERED, 0)
     i = 0
-    while (iterator.hasNext ()):
+    while (iterator.hasNext()):
         i = i + 1
-        iterator.next ()            
+        iterator.next()            
     print ("Total number of Records: " + str(i))
 
-def version ():
-    print ("0.1")
+def version():
+    print ("0.1.1")
