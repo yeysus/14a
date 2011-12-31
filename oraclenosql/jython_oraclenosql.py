@@ -1,4 +1,5 @@
 # Jython script to manipulate data in Oracle NoSQL databases, community edition.
+# -*- coding: iso-8859-1 -*-
 import sys
 sys.path.append('/opt/kv-1.2.123/lib/kvstore-1.2.123.jar')
 sys.path.append('/opt/kv-1.2.123/lib/je.jar')
@@ -311,7 +312,7 @@ def test(storeName, connectionString):
     nFunctionsTested = 0
     connect(storeName, connectionString)
     _evalPositiveMessage()
-    put("MyTest/MComp2/-/mComp1/mComp2","Johannes Laeufer")
+    put("MyTest/MComp2/-/mComp1/mComp2","Johannes Läufer")
     _evalPositiveMessage()
     get("MyTest/MComp2/-/mComp1/mComp2")
     _evalPositiveMessage()
