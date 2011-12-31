@@ -12,12 +12,15 @@ Usage:
    your location of Oracle's jar files, kvstore-xxx.jar and je.jar.
 2. On a command prompt, type
    /absolute/path/jython -i /absolute/path/jython_oraclenosql.py
+   Or, to properly display non-ascii characters on the console:
+   /absolute/path/jython -C iso-8859-1 -i /absolute/path/jython_oraclenosql.py
 3. Assuming above created Jython's console and 
-   preloaded jython_oraclenosql.py, you can type:
+   preloaded jython_oraclenosql.py, the functions that can be called are:
 
    connect("oracle_store_name", "host:port")
    countAll()
    version()
+   test("oracle_store_name", "host:port")
 
    putIfPresent("MajorComponent1/MajorComponent2/-/MinorComponent1","Value")
    putIfAbsent("MajorComponent1/MajorComponent2/-/MinorComponent1","Value")   
