@@ -4,7 +4,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 
 1.  Oracle NoSQL community edition, version 1.2.123, up & running.
 2.  For the Jython script: Jython 2.5.2.
-3.  For the Java script: Java 1.6.0_30
+3.  For Java: Java 1.6.0_30.
 
     Oracle NoSQL Database, Jython, and Java, are installed on the SAME machine.
 
@@ -40,7 +40,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 
 ### Usage (Java)
 1.  Navigate to the directory where the file Java_oraclenosql.java resides.
-2.  javac -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.java
-3.  java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql
+2.  javac -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.java.
+3.  java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.
 
     The arguments are not tested yet, the program runs the test function which calls put, get, storeIterator, countAll.
