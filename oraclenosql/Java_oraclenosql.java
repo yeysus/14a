@@ -69,35 +69,35 @@ public class Java_oraclenosql {
                 } else {
                     errorMessage = "storeName requires an argument";
                     // True means the program will abort after printing.
-                    printErrorMessage ("True");
+                    _printErrorMessage ("True");
                 }
             } else if (arg.equals ("-hostName")) {
                 if (argc < nArgs) {
                     hostName = argv[argc++];
                 } else {
                     errorMessage = "hostName requires an argument";
-                    printErrorMessage ("True");
+                    _printErrorMessage ("True");
                 }
             } else if (arg.equals ("-port")) {
                 if (argc < nArgs) {
                     port = argv[argc++];
                 } else {
                     errorMessage = "port requires an argument";
-                    printErrorMessage ("True");
+                    _printErrorMessage ("True");
                 }
             } else if (arg.equals ("-encoding")) {
                 if (argc < nArgs) {
                     encoding = argv[argc++];
                 } else {
                     errorMessage = "encoding requires an argument";
-                    printErrorMessage ("True");
+                    _printErrorMessage ("True");
                 }
             } else if (arg.equals ("-operation")) {
                 if (argc < nArgs) {
                     operation = argv[argc++];
                 } else {
                     errorMessage = "operation requires an argument";
-                    printErrorMessage ("True");
+                    _printErrorMessage ("True");
                 }
             } else if (arg.equals ("-operationArgs")) {
                 if (argc < nArgs) {
@@ -105,11 +105,11 @@ public class Java_oraclenosql {
                 } else {
                     errorMessage = "operationArgs requires an argument";
                     errorMessage += "enclosed in \"";
-                    printErrorMessage ("True");
+                    _printErrorMessage ("True");
                 }
             } else {
                 errorMessage = "Argument unknown.";
-                printErrorMessage ("False");
+                _printErrorMessage ("False");
             }
         }
         
@@ -135,24 +135,27 @@ public class Java_oraclenosql {
     }
     
     private void test () {
-        put ("MyTest/MComp2/-/mComp1/mComp2", "Corralejo", false);
+        put ("MyTest/MComp2/-/mComp1/mComp2", "Johannes Läufer", false);
         _evalPositiveMessage ("put");
         get ("MyTest/MComp2/-/mComp1/mComp2", false);
         _evalPositiveMessage ("get"); 
-        countAll ();
+        countAll (false);
         _evalPositiveMessage ("countAll");
         putIfAbsent ("MyTest/MComp2/-/mComp1/mComp3", "Juanito el Caminante", 
                      false);
         _evalPositiveMessage ("putIfAbsent");
-        putIfPresent ("MyTest/MComp2/-/mComp1/mComp2","Johannes Läufer", false);
+        putIfPresent ("MyTest/MComp2/-/mComp1/mComp2","Johannes Läufer 2", false);
         _evalPositiveMessage ("putIfPresent");
-        storeIterator ("MyTest/MComp2", true);
+        storeIterator ("MyTest", true);
         _evalPositiveMessage ("storeIterator");
-        
+        delete ("MyTest/MComp2/-/mComp1/mComp2", false);
+        _evalPositiveMessage ("delete");
+        delete ("MyTest/MComp2/-/mComp1/mComp3", false);
         System.out.println (nFunctionsPassedTest + " functions passed out of " +
                             nFunctionsTested);
         nFunctionsPassedTest = 0;
         nFunctionsTested = 0;
+        countAll (true);
     }
      
     private Key _prepareKey (String keysString) {
@@ -182,7 +185,7 @@ public class Java_oraclenosql {
             myKey = Key.createKey (majorComponents);
         } else {
             errorMessage = "ERROR: The String could not be transformed to a Key.";
-            printErrorMessage ("False");
+            _printErrorMessage ("False");
             return null;
         }
         return myKey;
@@ -214,6 +217,10 @@ public class Java_oraclenosql {
                     String myValueString = new String (valueVersion.getValue ().
                                                        getValue (), encoding);
                     if (isPrintOutput) System.out.println (myValueString);
+                } else {
+                    // If this is a test, assuming a proper key was put,
+                    // it did not pass it.
+                    return;
                 }
             } else if (what.equals ("put")) {
                 // put, putIfAbsent, putIfPresent.
@@ -231,14 +238,14 @@ public class Java_oraclenosql {
             positiveMessage = what + ": passed";
         } catch (Exception ex) {
             errorMessage = "ERROR in " + what + ": " + ex.toString ();
-            printErrorMessage ("False");
+            _printErrorMessage ("False");
             return;
         }
         return;
     }
 
     private void storeIterator (String keysString, boolean isPrintOutput) {
-        // This only works for iterating over major components.
+        // This only works for iterating over PARTIAL major components.
         // Usage: storeIterator("Test/HelloWorld")
 
         myKey = _prepareKey (keysString);
@@ -260,17 +267,11 @@ public class Java_oraclenosql {
             positiveMessage = "storeIterator: passed";
         } catch (Exception ex) {
             errorMessage = "ERROR in storeIterator: " + ex.toString ();
-            printErrorMessage ("False");
+            _printErrorMessage ("False");
         }         
     }
-    
-    private void printErrorMessage (String isAbort) {
-        System.out.println ("Error: " + errorMessage);
-        errorMessage = "";
-        if (isAbort.equals ("True")) System.exit (1);
-    }
 
-    private void countAll () {
+    private void countAll (boolean isPrintOutput) {
         try {
             Iterator iterator = store.storeKeysIterator (Direction.UNORDERED, 0);
             int i = 0;
@@ -278,74 +279,38 @@ public class Java_oraclenosql {
                 i = i + 1;
                 iterator.next ();            
             }
-            System.out.println ("Total number of Records: " + i);
+            if (isPrintOutput) System.out.println ("Total number of Records: " + i);
             positiveMessage = "countAll: passed";
         } catch (Exception ex) {
             errorMessage = "ERROR in countAll: " + ex.toString ();
-            printErrorMessage ("False");
-        }
-    }
-   
-    private void getTODO (String keysString) {
-        // e.g. get ("Test/HelloWorld/Java/-/message_text")
-        // String valueString = "Hello World from Java, Tomcat, and Oracle NoSQL";
-        
-        List<String> majorComponents = new ArrayList<String>();
-        List<String> minorComponents = new ArrayList<String>();
-        
-        String[] keysArray = keysString.split ("/");
-        // Define the major and minor components of the key.
-        boolean isMajor = true;
-        for (int i = 0; i < keysArray.length; i++) {
-            if (keysArray [i].equals ("-")) {
-                isMajor = false;
-                continue;
-            }
-            if (isMajor) {
-                majorComponents.add (keysArray [i]);
-            } else {
-                minorComponents.add (keysArray [i]);
-            }
-        }
-
-        Key myKey = Key.createKey (majorComponents, minorComponents);
-        
-        try {
-            final ValueVersion valueVersion = store.get (myKey);
-            if (valueVersion != null) {
-                String theValue = new String (valueVersion.getValue ().
-                                              getValue (), 
-                                              encoding);
-                System.out.println (theValue);}
-        } catch (Exception ex) {
-            errorMessage = "ERROR in get: " + ex.toString ();
-            printErrorMessage ("False");
+            _printErrorMessage ("False");
         }
     }
 
     private void get (String keysString, boolean isPrintOutput) {
-        // get ("Test/HelloWorld/Jython/-/message_text")  
         _storeFunctions ("get", keysString, "", isPrintOutput);
+        return;
+    }
+    
+    private void delete (String keysString, boolean isPrintOutput) {
+        _storeFunctions ("delete", keysString, "", isPrintOutput);
         return;
     }
     
     private void put (String keysString, String valueString, 
                       boolean isPrintOutput) {
-        // put ("Test/HelloWorld/Jython/-/message_text", "Hello World")  
         _storeFunctions ("put", keysString, valueString, isPrintOutput);
         return;
     }
     
     private void putIfPresent (String keysString, String valueString, 
-                      boolean isPrintOutput) {
-        // putIfPresent ("Test/HelloWorld/Jython/-/message_text", "Hello World")  
+                      boolean isPrintOutput) {  
         _storeFunctions ("putIfPresent", keysString, valueString, isPrintOutput);
         return;
     }
     
     private void putIfAbsent (String keysString, String valueString, 
-                               boolean isPrintOutput) {
-        // putIfAbsent ("Test/HelloWorld/Jython/-/message_text", "Hello World")  
+                               boolean isPrintOutput) { 
         _storeFunctions ("putIfAbsent", keysString, valueString, isPrintOutput);
         return;
     }
@@ -359,5 +324,11 @@ public class Java_oraclenosql {
         }
         positiveMessage = "";
         nFunctionsTested = nFunctionsTested + 1;
+    }
+    
+    private void _printErrorMessage (String isAbort) {
+        System.out.println ("Error: " + errorMessage);
+        errorMessage = "";
+        if (isAbort.equals ("True")) System.exit (1);
     }
 }

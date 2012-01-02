@@ -1,9 +1,9 @@
 # Jython script to manipulate data in Oracle NoSQL databases, community edition.
 # -*- coding: iso-8859-1 -*-
 import sys
-sys.path.append('/opt/kv-1.2.123/lib/kvstore-1.2.123.jar')
-sys.path.append('/opt/kv-1.2.123/lib/je.jar')
+sys.path.append('/opt/kv-1.2.123/lib/kvclient-1.2.123.jar')
 import jarray
+import array
 import inspect
 from oracle.kv import KVStore
 from oracle.kv import KVStoreConfig
@@ -12,10 +12,10 @@ from oracle.kv import Key
 from oracle.kv import Value
 from oracle.kv import ValueVersion
 from oracle.kv import Direction
-from com.sleepycat.persist import EntityStore
 from java.util import ArrayList
 from java.util import List
 from java.util import Iterator
+from java.util import SortedMap
 
 global store
 global myKey
@@ -231,8 +231,38 @@ def multiDelete(keysString):
         return        
     return
 
+def multiGet(keysString):
+    # To get multiple records sharing the same major path components.
+    # e.g. multiGet("Test/HelloWorld/Java/")
+    global errorMessage
+    global positiveMessage
+    global myKey
+    myKey = _prepareKey(keysString)
+    if (errorMessage != ""):
+        print (errorMessage)
+        errorMessage = ""
+        return
+    errorMessage = _checkStore()
+    if (errorMessage != ""):
+        print (errorMessage)
+        errorMessage = ""
+        return
+    try:
+        result = store.multiGet(myKey, None, None)
+        for myRecord in result.entrySet():
+            myValue = myRecord.getValue().getValue().getValue().tostring()
+            print(myValue)           
+        positiveMessage = "multiGet: passed"
+    except:
+        instance = sys.exc_info()[1]
+        errorMessage = "Error in multiGet: " + str(instance)
+        print errorMessage
+        errorMessage = ""
+        return        
+    return
+
 def storeIterator(keysString):
-    # This only works for iterating over major components.
+    # This only works for iterating over PARTIAL major components.
     # Usage: storeIterator("Test/HelloWorld")
     global errorMessage
     global positiveMessage
@@ -248,12 +278,14 @@ def storeIterator(keysString):
         errorMessage = ""
         return
     try:
-        iterator = store.storeIterator(Direction.UNORDERED, 0, myKey, None, None)    
+        iterator = store.storeIterator(Direction.UNORDERED, 0, myKey, None, None)
         while (iterator.hasNext()):
-            element = iterator.next()
-            key = element.getKey().toString()
-            value = element.getValue().getValue().tostring()
-            print (key + ", "  + value)
+            keyValueVersion = iterator.next()
+            key = keyValueVersion.getKey().toString()
+            valueArray = keyValueVersion.getValue().getValue()
+            valueArray.tostring()
+            # no attr valueArray.toString()
+            print (key + ", " + valueArray.tostring().decode("iso-8859-1"))
         positiveMessage = "storeIterator: passed"
     except:
         instance = sys.exc_info()[1]
@@ -276,7 +308,7 @@ def countAll():
         i = 0
         while (iterator.hasNext()):
             i = i + 1
-            iterator.next()            
+            iterator.next()
         print ("Total number of Records: " + str(i))
         positiveMessage = "countAll: passed"
     except:
@@ -287,8 +319,31 @@ def countAll():
         return
     return
 
+def getAll():
+    global errorMessage
+    global positiveMessage
+    errorMessage = _checkStore()
+    if (errorMessage != ""):
+        print (errorMessage)
+        errorMessage = ""
+        return 
+    try:
+        iterator = store.storeKeysIterator(Direction.UNORDERED, 0)
+        while (iterator.hasNext()):
+            element = iterator.next()
+            valueString = store.get(element).getValue().getValue().tostring()
+            print (element.toString())
+        positiveMessage = "getAll: passed"
+    except:
+        instance = sys.exc_info()[1]
+        errorMessage = "Error in getAll(): " + str(instance)
+        print errorMessage
+        errorMessage = ""
+        return
+    return
+
 def version():
-    print ("0.1.2")
+    print ("0.1.3")
 
 def _evalPositiveMessage():
     global positiveMessage
@@ -312,19 +367,23 @@ def test(storeName, connectionString):
     nFunctionsTested = 0
     connect(storeName, connectionString)
     _evalPositiveMessage()
-    put("MyTest/MComp2/-/mComp1/mComp2","Johannes Läufer")
+    put("MyTest/MComp2/-/mComp1/mComp2","Johannes LŠufer")
     _evalPositiveMessage()
     get("MyTest/MComp2/-/mComp1/mComp2")
     _evalPositiveMessage()
-    delete("MyTest/MComp2/-/mComp1/mComp2")
+    putIfAbsent("MyTest/MComp2/-/mComp1/mComp3","Juanito el Caminante")
+    _evalPositiveMessage()
+    putIfPresent("MyTest/MComp2/-/mComp1/mComp2","Johannes LŠufer 2")
     _evalPositiveMessage()
     countAll()
     _evalPositiveMessage()
-    putIfAbsent("MyTest/MComp2/-/mComp1/mComp2","Juanito el Caminante")
+    getAll()
     _evalPositiveMessage()
-    putIfPresent("MyTest/MComp2/-/mComp1/mComp2","Corralejo")
+    storeIterator("MyTest")
     _evalPositiveMessage()
-    storeIterator("MyTest/MComp2")
+    multiGet("MyTest/MComp2")
+    _evalPositiveMessage()
+    delete("MyTest/MComp2/-/mComp1/mComp2")
     _evalPositiveMessage()
     multiDelete("MyTest/MComp2")
     _evalPositiveMessage()  
