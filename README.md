@@ -5,8 +5,9 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 1.  Oracle NoSQL community edition, version 1.2.123, up & running.
 2.  For the Jython script: Jython 2.5.2.
 3.  For Java: Java 1.6.0_30.
+4.  For the JRuby script: JRuby 1.6.5.1
 
-    Oracle NoSQL Database, Jython, and Java, are installed on the SAME machine.
+    Oracle NoSQL Database, Jython, Java, and JRuby, are installed on the SAME machine.
 
     Tested on a CentOS 5.7 virtual machine.
 
@@ -44,3 +45,9 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 3.  java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.
 
     The arguments are not tested yet, the program runs the test function which calls put, get, storeIterator, countAll.
+
+### Usage (JRuby)
+1. Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
+2. Run: /opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb
+
+   Only "connect" and "get" are workng. 
