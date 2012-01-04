@@ -53,11 +53,11 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 1. Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
 2. Run: /opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb
 
+    Only "connect" and "get" work for now.
+
 ### Usage (Clojure)
 1. Modify the last lines of the file Clojure_oraclenosql.clj to reflect the environment.
 2. Modify the script clj to reflect the classpath.
 3. Navigate to the folder containing both scripts, "clj" and "Clojure_oraclenosql.clj".
 4. Run with ./clj Clojure_oraclenosql.clj. It only connects to the store.
 
-
-    Only "connect" and "get" are working. 
