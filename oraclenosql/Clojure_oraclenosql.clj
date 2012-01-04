@@ -10,17 +10,20 @@
     (def hosts (into-array [connectionString]))
     ; Error handling.
     ; prn is "print".
-    (try 
-        ((def kvStoreConfig (new KVStoreConfig storeName hosts))
+    ;(try 
+        (def kVStoreConfig (new KVStoreConfig storeName hosts))
         ; store = KVStoreFactory.getStore(kVStoreConfig)
-        ;(def kVStoreFactory (new KVStoreFactory))
+        (def kVStoreFactory (new KVStoreFactory))
         ;(. KVStoreFactory getStore kVStoreConfig)
-        )
-    (catch Exception ex 
-        (prn (.toString ex)))
-    (finally (prn "in fin"))
-    ) ; End of try-catch-finally block.
+        (def store (. KVStoreFactory getStore kVStoreConfig))
+        ;)
+   ; (catch Exception ex 
+   ;     (prn (.toString ex)))
+   ; (finally (prn "in fin"))
+   ; ) ; End of try-catch-finally block.
 ) ; End of defn connect.
+
+
 
 ; Define global variables using def.
 (def errorMessage "")
