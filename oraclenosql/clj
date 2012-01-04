@@ -1,0 +1,1 @@
+java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar:/opt/clojure/clojure-1.3.0.jar clojure.main $1
