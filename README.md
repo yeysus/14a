@@ -5,7 +5,8 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 1.  Oracle NoSQL community edition, version 1.2.123, up & running.
 2.  For the Jython script: Jython 2.5.2.
 3.  For Java: Java 1.6.0_30.
-4.  For the JRuby script: JRuby 1.6.5.1
+4.  For the JRuby script: JRuby 1.6.5.1.
+5.  For Clohure: Clojure 1.3.0.
 
 
     Oracle NoSQL Database, Jython, Java, and JRuby, are installed on the SAME machine.
@@ -51,6 +52,12 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 ### Usage (JRuby)
 1. Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
 2. Run: /opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb
+
+### Usage (Clojure)
+1. Modify the last lines of the file Clojure_oraclenosql.clj to reflect the environment.
+2. Modify the script clj to reflect the classpath.
+3. Navigate to the folder containing both scripts, "clj" and "Clojure_oraclenosql.clj".
+4. Run with ./clj Clojure_oraclenosql.clj. It only connects to the store.
 
 
     Only "connect" and "get" are working. 
