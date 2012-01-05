@@ -1,4 +1,4 @@
-Scripts to manipulate String data of an Oracle NoSQL database (community edition). Languages: Jython, Java, JRuby, Clojure.
+Scripts to manipulate String data of an Oracle NoSQL database (community edition). Languages: Jython, Java, JRuby, Clojure, Groovy.
 
 ### Requisites
 
@@ -7,8 +7,9 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 3.  For Java: Java 1.6.0_30.
 4.  For the JRuby script: JRuby 1.6.5.1.
 5.  For Clojure: Clojure 1.3.0.
+6.  Groovy: 1.8.5.
 
-    Oracle NoSQL Database, Jython, Java, JRuby, Clojure, are installed on the SAME machine.
+    Oracle NoSQL Database, Jython, Java, JRuby, Clojure, Groovy, are installed on the SAME machine.
 
     Tested on a CentOS 5.7 virtual machine.
 
@@ -49,16 +50,22 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
     The arguments are not tested yet, the program runs the test function which calls put, get, storeIterator, countAll.
 
 ### Usage (JRuby)
-1. Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
-2. Run: /opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb
+1.  Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
+2.  Run: "/opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb"
 
     Only "connect" and "get" work for now.
 
 ### Usage (Clojure)
 Uwe, das ist fuer Dich.
 
-1. Modify the last lines of the file Clojure_oraclenosql.clj to reflect the environment.
-2. Modify the script clj to reflect the classpath.
-3. Navigate to the folder containing both scripts, "clj" and "Clojure_oraclenosql.clj".
-4. Run with ./clj Clojure_oraclenosql.clj. It connects to the store, write and read one value.
+1.  Modify the last lines of the file Clojure_oraclenosql.clj to reflect the environment.
+2.  Modify the script clj to reflect the classpath.
+3.  Navigate to the folder containing both scripts, "clj" and "Clojure_oraclenosql.clj".
+4.  Run with "./clj Clojure_oraclenosql.clj". It connects to the store, writes and reads one value.
 
+### Usage (Groovy)
+1.  Modify the top lines of the script with the store name, host, port, encoding.
+2.  Navigate to the directory where the file Groovy_oraclenosql.groovy is.
+3.  Run with "groovy -cp /opt/kv-1.2.123/lib/kvclient-1.2.123.jar Groovy_oraclenosql.groovy"
+
+    It runs some automatic tests (connect, put, get, delete, storeIterator).

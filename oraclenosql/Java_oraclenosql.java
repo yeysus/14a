@@ -201,8 +201,6 @@ public class Java_oraclenosql {
         // +++TODO
         // errorMessage = _checkStore()
         
-        //store_function = getattr (store, "%s" % what);
-        
         // put & Co. return a Version, get returns a ValueVersion, 
         // delete returns a boolean.
         try {
