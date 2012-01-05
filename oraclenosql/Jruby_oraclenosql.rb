@@ -32,7 +32,6 @@ end
 
 def _prepareKey(keysString)
     # e.g. keysString = "Test/HelloWorld/Java/-/message_text"
-    # myKey contains either an error message or a Key.
     majorComponents = ArrayList.new()
     minorComponents = ArrayList.new()
     keysArray = keysString.split("/")

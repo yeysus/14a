@@ -1,4 +1,4 @@
-Scripts to manipulate String data of an Oracle NoSQL database (community edition). Languages: Jython, Java.
+Scripts to manipulate String data of an Oracle NoSQL database (community edition). Languages: Jython, Java, JRuby, Clojure.
 
 ### Requisites
 
@@ -6,10 +6,10 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 2.  For the Jython script: Jython 2.5.2.
 3.  For Java: Java 1.6.0_30.
 4.  For the JRuby script: JRuby 1.6.5.1.
-5.  For Clohure: Clojure 1.3.0.
+5.  For Clojure: Clojure 1.3.0.
 
 
-    Oracle NoSQL Database, Jython, Java, and JRuby, are installed on the SAME machine.
+    Oracle NoSQL Database, Jython, Java, JRuby, Clojure, are installed on the SAME machine.
 
     Tested on a CentOS 5.7 virtual machine.
 
