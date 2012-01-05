@@ -56,6 +56,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 
 ### Usage (Clojure)
 Uwe, das ist fuer Dich.
+
 1. Modify the last lines of the file Clojure_oraclenosql.clj to reflect the environment.
 2. Modify the script clj to reflect the classpath.
 3. Navigate to the folder containing both scripts, "clj" and "Clojure_oraclenosql.clj".
