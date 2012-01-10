@@ -19,11 +19,11 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
    the location of Oracle's jar files, kvstore-xxx.jar and je.jar.
 2.  On a command prompt, type
 
-    /absolute/path/jython -i /absolute/path/jython_oraclenosql.py
-   
+    /absolute/path/jython -i /absolute/path/Jython_oraclenosql.py
+ 
     Or, to properly display non-ascii characters on the console:
 
-    /absolute/path/jython -C iso-8859-1 -i /absolute/path/jython_oraclenosql.py
+    /absolute/path/jython -C iso-8859-1 -i /absolute/path/Jython_oraclenosql.py
 
 3.  Assuming above created Jython's console and 
    preloaded jython_oraclenosql.py, the functions that can be called are:
