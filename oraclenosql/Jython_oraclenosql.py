@@ -17,17 +17,56 @@ from java.util import List
 from java.util import Iterator
 from java.util import SortedMap
 
-global store
-global myKey
-global myValue
-global errorMessage
-global positiveMessage
-global nFunctionsPassedTest
-global nFunctionsTested
-errorMessage = ""
-positiveMessage = ""
-nFunctionsPassedTest = 0
-nFunctionsTested = 0
+def main():
+    # Read arguments passed in the command line.
+    # sys.argv[0] contains the name of the script file, e.g.
+    # Jython_oraclenosql.py.
+    # optparse is deprecated since Python 2.7, so better don't use Jython's 
+    # equivalent.
+    global storeName
+    global connectionString
+    arglen = len(sys.argv)
+    isTest = False
+    if (arglen > 1):
+        for i in range (1, arglen):
+            if (sys.argv[i] == "test"):
+                isTest = True
+                continue
+            if (sys.argv[i].startswith("storeName")):
+                myArray = sys.argv[i].split("=")
+                storeName = myArray[1]   
+                continue
+            if (sys.argv[i].startswith("connectionString")):
+                myArray = sys.argv[i].split("=")
+                storeName = myArray[1]
+                continue
+            if (sys.argv[i] == "help"):
+                _printUsage() 
+                break
+    if isTest:
+        test(storeName, connectionString)
+
+# Prints usage message and exit.
+def _printUsage():
+    print "Usage: "
+    print "Interactive mode:"
+    print "jython -i /absolute/path/Jython_oraclenosql.py arg1 arg2 arg3 arg4"
+    print "Non-Interactive mode: "
+    print "jython /absolute/path/Jython_oraclenosql.py arg1 arg2 arg3 arg4"
+    print "Valid arguments:"
+    print "storeName=Name_of_the_store"
+    print "connectionString=host_name:port"
+    print "test"
+    print "help"
+                
+# Prints errorMessage, sets it to "" and returns.
+def _printErrorMessage(myErrorMessage):
+    global errorMessage
+    errorMessage = myErrorMessage
+    if (errorMessage != ""):
+        print errorMessage
+        errorMessage = ""
+    return  
 
 def _validateConnectionString(connectionString):
     # connectionString should be string:integer.
@@ -52,9 +91,7 @@ def connect(storeName, connectionString):
     global errorMessage
     global positiveMessage
     global store
-    if not isinstance(storeName, str):
-        print ("ERROR: Please enter a String as the name of the store.")
-        return
+    assert isinstance(storeName, str), "ERROR: Please enter a String as the name of the store."
     if not isinstance (connectionString, str):
         print ("ERROR: Please enter a String as the connections string.")
         print ("e.g. connect (\"mystore\",\"localhost:5000\")")
@@ -392,3 +429,20 @@ def test(storeName, connectionString):
     nFunctionsPassedTest = 0
     nFunctionsTested = 0    
     return
+
+global storeName
+storeName = "mystore"
+global connectionString
+connectionString = "localhost:5000"
+global store
+global myKey
+global myValue
+global errorMessage
+global positiveMessage
+global nFunctionsPassedTest
+global nFunctionsTested
+errorMessage = ""
+positiveMessage = ""
+nFunctionsPassedTest = 0
+nFunctionsTested = 0
+main()
