@@ -29,16 +29,17 @@ def main():
     isTest = False
     if (arglen > 1):
         for i in range (1, arglen):
-            if (sys.argv[i] == "test"):
+            myarg = (sys.argv[i]).lower()
+            if (myarg == "test"):
                 isTest = True
                 continue
-            if (sys.argv[i].startswith("storeName")):
-                myArray = sys.argv[i].split("=")
+            if (myarg.startswith("storename")):
+                myArray = myarg.split("=")
                 storeName = myArray[1]   
                 continue
-            if (sys.argv[i].startswith("connectionString")):
-                myArray = sys.argv[i].split("=")
-                storeName = myArray[1]
+            if (myarg.startswith("connectionstring")):
+                myArray = myarg.split("=")
+                connectionString = myArray[1]
                 continue
             if (sys.argv[i] == "help"):
                 _printUsage() 
@@ -54,8 +55,8 @@ def _printUsage():
     print "Non-Interactive mode: "
     print "jython /absolute/path/Jython_oraclenosql.py arg1 arg2 arg3 arg4"
     print "Valid arguments:"
-    print "storeName=Name_of_the_store"
-    print "connectionString=host_name:port"
+    print "storename=Name_of_the_store"
+    print "connectionstring=host_name:port"
     print "test"
     print "help"
                 
@@ -404,6 +405,8 @@ def test(storeName, connectionString):
     nFunctionsTested = 0
     connect(storeName, connectionString)
     _evalPositiveMessage()
+    countAll()
+    _evalPositiveMessage()
     put("MyTest/MComp2/-/mComp1/mComp2","Johannes LŠufer")
     _evalPositiveMessage()
     get("MyTest/MComp2/-/mComp1/mComp2")
@@ -411,8 +414,6 @@ def test(storeName, connectionString):
     putIfAbsent("MyTest/MComp2/-/mComp1/mComp3","Juanito el Caminante")
     _evalPositiveMessage()
     putIfPresent("MyTest/MComp2/-/mComp1/mComp2","Johannes LŠufer 2")
-    _evalPositiveMessage()
-    countAll()
     _evalPositiveMessage()
     getAll()
     _evalPositiveMessage()
