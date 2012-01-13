@@ -127,7 +127,7 @@ def _checkStore():
         global store
         store
     except:
-        errorMessage = "ERROR: Define your store connection first. \n"
+        errorMessage = "ERROR: Define the store connection first. \n"
         errorMessage += "Type: \n"
         errorMessage += "connect(\"Store_Name\", \"Connection_String\")\n."
         errorMessage += "e.g. connect(\"mystore\",\"localhost:5000\")"

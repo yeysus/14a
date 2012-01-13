@@ -53,7 +53,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 1.  Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
 2.  Run: "/opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb"
 
-    Only "connect" and "get" work for now.
+    "connect", "put", "get", "countAll", "test" (simply tests all other functions), are working.
 
 ### Usage (Clojure)
 Uwe, das ist fuer Dich.
