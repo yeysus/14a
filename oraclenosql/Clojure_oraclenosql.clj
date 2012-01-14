@@ -72,6 +72,9 @@
             "put" (do
                   (def myValue (. Value createValue (.getBytes valueString)))
                   (def value_version (.put store myKey myValue)))
+            "delete" (do
+                     (def delete_result (.delete store myKey))
+                     (prn delete_result))
         )
     )
 ) ; End of defn _storeFunctions.
@@ -86,6 +89,7 @@
 (_storeFunctions "put" "MyTest/HelloWorld/-/message_text" "Juanito el Caminante")
 (_storeFunctions "get" "MyTest/HelloWorld/-/message_text" "")
 (println myValueString)
+(_storeFunctions "delete" "MyTest/HelloWorld/-/message_text" "")
 
 
 
