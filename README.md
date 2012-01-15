@@ -1,4 +1,4 @@
-Scripts to manipulate String data of an Oracle NoSQL database (community edition). Languages: Jython, Java, JRuby, Clojure, Groovy.
+Scripts to manipulate String data of an Oracle NoSQL database (community edition). Languages: Jython, Java, JRuby, Clojure, Groovy, Rhino.
 
 ### Requisites
 
@@ -8,6 +8,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 4.  For the JRuby script: JRuby 1.6.5.1.
 5.  For Clojure: Clojure 1.3.0.
 6.  Groovy: 1.8.5.
+7.  Rhino: 1.7R3.
 
     Oracle NoSQL Database, Jython, Java, JRuby, Clojure, Groovy, are installed on the SAME machine.
 
@@ -69,3 +70,10 @@ Uwe, das ist fuer Dich.
 3.  Run with "groovy -cp /opt/kv-1.2.123/lib/kvclient-1.2.123.jar Groovy_oraclenosql.groovy"
 
     It runs some automatic tests (connect, put, get, delete, storeIterator).
+    
+### Usage (Rhino).
+1.  Modify the last lines of the script Rhino_oraclenosql.js with the store name, host, port.
+2.  Navigate to the directory where the file Rhino_oraclenosql.js is.
+3.  Run with java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar:/opt/rhino1_7R3/js.jar org.mozilla.javascript.tools.shell.Main Rhino_oraclenosql.js
+
+    It runs an automatic test (connect, get).
