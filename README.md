@@ -10,7 +10,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 6.  Groovy: 1.8.5.
 7.  Rhino: 1.7R3.
 
-    Oracle NoSQL Database, Jython, Java, JRuby, Clojure, Groovy, are installed on the SAME machine.
+    Oracle NoSQL Database and the programming languages are installed on the SAME machine.
 
     Tested on a CentOS 5.7 virtual machine.
 
