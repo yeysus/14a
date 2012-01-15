@@ -14,17 +14,16 @@ importClass (Packages.oracle.kv.KeyValueVersion);
 importClass (Packages.oracle.kv.Direction);
 importClass (java.util.ArrayList);
 
-function connect (storeName, hostName, port) {
-    try {
-        store = KVStoreFactory.getStore
-            (new KVStoreConfig (storeName, hostName + ":" + port));
-    } catch (err) {
-        // From http://www.mozilla.org/rhino/ScriptingJava.html:
-        // Rhino wraps Java exceptions into error objects with properties:
-        // javaException and rhinoException.
-        print (err.javaException);
+function _evalPositiveMessage (what) {
+    if (positiveMessage != "") {
+        print (positiveMessage);
+        nFunctionsPassedTest = nFunctionsPassedTest + 1;
+    } else {
+        print (what + ": NOT PASSED TEST.");
     }
-    return store;
+    positiveMessage = "";
+    nFunctionsTested = nFunctionsTested + 1;
+    return;
 }
 
 function _prepareKey (keysString) {
@@ -82,22 +81,25 @@ function _storeFunctions (what, keysString, valueString, isPrintOutput) {
                 myValueString = new java.lang.String (valueVersion.getValue ().
                                                    getValue ());
                 if (isPrintOutput) print (myValueString);
+                positiveMessage = "get: passed test.";
             } else {
                 // If this is a test, assuming a proper key was put,
                 // it did not pass it.
                 return;
             }
         } else if (what.equals ("put")) {
-            // put, putIfAbsent, putIfPresent.
-            myValue = Value.createValue (valueString.getBytes ());
-
+            javaValueString = new java.lang.String (valueString);
+            myValue = Value.createValue (javaValueString.getBytes ());
             store.put (myKey, myValue);
+            positiveMessage = "put: passed test.";
         } else if (what.equals ("putIfAbsent")) {
             myValue = Value.createValue (valueString.getBytes ());
             store.putIfAbsent (myKey, myValue);
+            positiveMessage = "putIfAbsent: passed test.";
         } else if (what.equals ("putIfPresent")) {
             myValue = Value.createValue (valueString.getBytes ());
             store.putIfPresent (myKey, myValue);
+            positiveMessage = "putIfPresent: passed test.";
         }
         positiveMessage = what + ": passed";
     } catch (err) {
@@ -111,15 +113,140 @@ function _storeFunctions (what, keysString, valueString, isPrintOutput) {
     return;
 }
 
+function connect (storeName, hostName, port) {
+
+    try {
+        store = KVStoreFactory.getStore
+            (new KVStoreConfig (storeName, hostName + ":" + port));
+        positiveMessage = "connect: passed test.";
+    } catch (err) {
+        // From http://www.mozilla.org/rhino/ScriptingJava.html:
+        // Rhino wraps Java exceptions into error objects with properties:
+        // javaException and rhinoException.
+        print (err.javaException);
+    }
+    return store;
+}
+
+function countAll () {
+    try {
+        iterator = store.storeKeysIterator (Direction.UNORDERED, 0);
+        i = 0;
+        while (iterator.hasNext()) {
+            i = i + 1;
+            iterator.next ();
+        }
+        print ("Total number of Records: " + i);
+        positiveMessage = "countAll: passed test.";
+    } catch (err) {
+        errorMessage = "Error in countAll(): " + err.rhinoException;
+        print (errorMessage);
+        errorMessage = "";
+        return
+    }
+    return
+}
+
 function get (keysString, isPrintOutput) {
     _storeFunctions ("get", keysString, "", isPrintOutput);
     return;
 }
 
-function test (myStore, host, port) {
-    // if connect() fails, store will be null.
-    store = connect(myStore, host, port); 
-    get ("Test/HelloWorld/Java/-/message_text", true);    
+function put (keysString, valueString, isPrintOutput) {
+    _storeFunctions ("put", keysString, valueString, isPrintOutput);
+    return;
 }
 
-test ("mystore", "localhost", 5000);
+// delete is a keyword in javascript.
+function del (keysString, isPrintOutput) {
+    _storeFunctions ("delete", keysString, "", isPrintOutput);
+    return;
+}
+
+function test (storeName, hostName, port) {
+    // if connect() fails, store will be null.
+    nFunctionsPassedTest = 0;
+    nFunctionsTested = 0;
+    positiveMessage = "";
+    print ("Starting Test.");
+    store = connect(storeName, hostName, port);
+    _evalPositiveMessage ("connect");
+    countAll ();
+    _evalPositiveMessage ("countAll");    
+    put ("MyTest/MComp2/-/mComp1/mComp2", "Juanito el Caminante", false);
+    _evalPositiveMessage ("put");     
+    get ("MyTest/MComp2/-/mComp1/mComp2", true);
+    _evalPositiveMessage ("get");    
+    del ("MyTest/MComp2/-/mComp1/mComp2", true); 
+    _evalPositiveMessage ("delete");
+    print (nFunctionsPassedTest + " functions passed the test out of " + 
+        nFunctionsTested);
+    countAll (); 
+    nFunctionsPassedTest = 0;
+    nFunctionsTested = 0;
+    positiveMessage = "";    
+}
+
+// Modified from http://www.manamplified.org/archives/2005/11/
+//                      javascript-command-line-parsing.html
+// In bit.ly: http://bit.ly/A88tVW
+function readArguments () {
+
+    var params = [];
+
+    for each (var arg in args) {
+        // Argument is in a good format, -a=parameter
+        if (arg.indexOf ("-") == 0) {
+            arg = arg.substring (1).split ("=");
+            switch (arg[0]) {
+                case "s":
+                    // s: store name.
+                    storeName = arg[1];
+                    break;
+                case "h":
+                    // h: host name.
+                    hostName = arg[1];
+                    break;
+                case "p":
+                    // p: port.
+                    port = arg[1];
+                    break;
+                default:
+                    print ("+++++ ERROR: Option not recognized: " + arg[0]);
+                    break;
+            }
+        } else {
+            print ("+++++ ERROR: Option not recognized: " + arg + " +++++");
+            print ("+++++ Maybe you need to prefix it with a '-' +++++");
+        }
+    }
+}
+
+function fillDefaults () {
+    var isUsingDefaults = false;
+    if (storeName == "") {
+        storeName = defaultStoreName;
+        isUsingDefaults = true;
+    }
+    if (hostName == "") {
+        hostName = defaultHostName;
+        isUsingDefaults = true;
+    }        
+    if (port == "") {
+        port = defaultPort;
+        isUsingDefaults = true;
+    }
+    if (isUsingDefaults) print ("+++ Using default(s). +++");
+}
+
+// JavaScript stores passed command-line arguments in the variable "arguments".
+args = arguments;
+storeName = "";
+hostName = "";
+port = "";
+defaultStoreName = "mystore",
+defaultHostName = "localhost";
+defaultPort = "5000";
+readArguments ();
+fillDefaults ();
+test (storeName, hostName, port);

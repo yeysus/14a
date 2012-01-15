@@ -72,8 +72,9 @@ Uwe, das ist fuer Dich.
     It runs some automatic tests (connect, put, get, delete, storeIterator).
     
 ### Usage (Rhino).
-1.  Modify the last lines of the script Rhino_oraclenosql.js with the store name, host, port.
-2.  Navigate to the directory where the file Rhino_oraclenosql.js is.
-3.  Run with java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar:/opt/rhino1_7R3/js.jar org.mozilla.javascript.tools.shell.Main Rhino_oraclenosql.js
+1.  Navigate to the directory where the file Rhino_oraclenosql.js is.
+2.  Identify where kvclient-1.2.123.jar and Rhino's js.jar are and modify the path below accordingly.
+3.  Run with java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar:/opt/rhino1_7R3/js.jar org.mozilla.javascript.tools.shell.Main Rhino_oraclenosql.js -s=store_name -h=host_name -p=port
+4.  Optional: Modify the last lines of the script Rhino_oraclenosql.js with the default store name, host, port. Then no arguments need to be passed in the command line.
 
-    It runs an automatic test (connect, get).
+    It runs an automatic test (connect, countAll, put, get, delete). If arguments are not passed the defaults are tried.
