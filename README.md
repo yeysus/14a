@@ -16,18 +16,26 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 
 ### Usage (Jython)
 
-1.  Modify the first lines of the file jython_oraclenosql.py to reflect
-   the location of Oracle's jar files, kvstore-xxx.jar and je.jar.
-2.  On a command prompt, type
+1.  On a command prompt, type
 
-    /absolute/path/jython -i /absolute/path/Jython_oraclenosql.py
+    /absolute/path/jython /absolute/path/Jython_oraclenosql.py -kvclientpath=/opt/kv-1.2.123/lib/kvclient-1.2.123.jar -test -storename=store_name -connectionstring=host:port
  
-    Or, to properly display non-ascii characters on the console:
+    For interactive mode: add -i to jython's arguments:
+    
+    /absolute/path/jython -i ...
+    
+    In some cases, it may be convenient to add the switch -C iso-8859-1 to properly display Western European non-ascii characters on the console:
+    
+    /absolute/path/jython -C iso-8859-1 ...
+    
+    To run automatic tests, add -test to the script arguments:
+    
+    /absolute/path/jython /absolute/path/Jython_oraclenosql.py -test ...
+    
+2.  Optional: Modify the last lines of the file Jython_oraclenosql.py to reflect
+   the defaults so no command line arguments must be passed.
 
-    /absolute/path/jython -C iso-8859-1 -i /absolute/path/Jython_oraclenosql.py
-
-3.  Assuming above created Jython's console and 
-   preloaded jython_oraclenosql.py, the functions that can be called are:
+    Assuming above created Jython's console and preloaded Jython_oraclenosql.py, the functions that can be called are:
 
     * connect("oracle_store_name", "host:port")
     * countAll()

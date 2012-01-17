@@ -1,17 +1,9 @@
 # Jython script to manipulate data in Oracle NoSQL databases, community edition.
 # -*- coding: iso-8859-1 -*-
 import sys
-sys.path.append('/opt/kv-1.2.123/lib/kvclient-1.2.123.jar')
 import jarray
 import array
 import inspect
-from oracle.kv import KVStore
-from oracle.kv import KVStoreConfig
-from oracle.kv import KVStoreFactory
-from oracle.kv import Key
-from oracle.kv import Value
-from oracle.kv import ValueVersion
-from oracle.kv import Direction
 from java.util import ArrayList
 from java.util import List
 from java.util import Iterator
@@ -23,27 +15,53 @@ def main():
     # Jython_oraclenosql.py.
     # optparse is deprecated since Python 2.7, so better don't use Jython's 
     # equivalent.
+    # As part of the import block, kvclient.jar has to be passed to the script
+    # like:
+    # sys.path.append('/opt/kv-1.2.123/lib/kvclient-1.2.123.jar')
+    # I have absolutely no idea of how to append a jar file to the sy.path like
+    # sys.path.append('/opt/kv-1.2.123/lib/kvclient-1.2.123.jar') in the 
+    # command line, so I do it here with brute force:
     global storeName
     global connectionString
+    global kvclientpath
     arglen = len(sys.argv)
     isTest = False
     if (arglen > 1):
         for i in range (1, arglen):
             myarg = (sys.argv[i]).lower()
-            if (myarg == "test"):
+            if (myarg == "-test"):
                 isTest = True
                 continue
-            if (myarg.startswith("storename")):
+            if (myarg.startswith("-storename")):
                 myArray = myarg.split("=")
                 storeName = myArray[1]   
                 continue
-            if (myarg.startswith("connectionstring")):
+            if (myarg.startswith("-connectionstring")):
                 myArray = myarg.split("=")
                 connectionString = myArray[1]
+                continue
+            if (myarg.startswith("-kvclientpath")):
+                myArray = myarg.split("=")
+                kvclientpath = myArray[1]
+                sys.path.append(kvclientpath)
                 continue
             if (sys.argv[i] == "help"):
                 _printUsage() 
                 break
+    global KVStore
+    global KVStoreConfig
+    global KVStoreFactory
+    global Key
+    global Value
+    global ValueVersion
+    global Direction
+    from oracle.kv import KVStore
+    from oracle.kv import KVStoreConfig
+    from oracle.kv import KVStoreFactory
+    from oracle.kv import Key
+    from oracle.kv import Value
+    from oracle.kv import ValueVersion
+    from oracle.kv import Direction
     if isTest:
         test(storeName, connectionString)
 
@@ -54,10 +72,11 @@ def _printUsage():
     print "jython -i /absolute/path/Jython_oraclenosql.py arg1 arg2 arg3 arg4"
     print "Non-Interactive mode: "
     print "jython /absolute/path/Jython_oraclenosql.py arg1 arg2 arg3 arg4"
-    print "Valid arguments:"
-    print "storename=Name_of_the_store"
-    print "connectionstring=host_name:port"
-    print "test"
+    print "Valid arguments and examples:"
+    print "-kvclientpath=/opt/kv-1.2.123/lib/kvclient-1.2.123.jar"
+    print "-storename=Name_of_the_store"
+    print "-connectionstring=host_name:port"
+    print "-test"
     print "help"
                 
 # Prints errorMessage, sets it to "" and returns.
@@ -96,11 +115,7 @@ def connect(storeName, connectionString):
     if not isinstance (connectionString, str):
         print ("ERROR: Please enter a String as the connections string.")
         print ("e.g. connect (\"mystore\",\"localhost:5000\")")
-        return        
-    if (storeName == ""): 
-        storeName = "mystore"
-    if (connectionString == ""): 
-        connectionString = "localhost:5000"
+        return
     errorMessage = _validateConnectionString(connectionString)
     if (errorMessage != ""):
         print errorMessage
@@ -160,7 +175,7 @@ def _prepareKey(keysString):
     else:
         errorMessage = "ERROR: The String could not be transformed to a Key."
         return        
-    return myKey   
+    return myKey
 
 def get(keysString):
     # e.g. get("Test/HelloWorld/Java/-/message_text")
@@ -381,7 +396,7 @@ def getAll():
     return
 
 def version():
-    print ("0.1.3")
+    print ("0.1.5")
 
 def _evalPositiveMessage():
     global positiveMessage
@@ -407,7 +422,7 @@ def test(storeName, connectionString):
     _evalPositiveMessage()
     countAll()
     _evalPositiveMessage()
-    put("MyTest/MComp2/-/mComp1/mComp2","Johannes LŠufer")
+    put("MyTest/MComp2/-/mComp1/mComp2","Johannes Läufer")
     _evalPositiveMessage()
     get("MyTest/MComp2/-/mComp1/mComp2")
     _evalPositiveMessage()
@@ -427,14 +442,14 @@ def test(storeName, connectionString):
     _evalPositiveMessage()  
     print (str(nFunctionsPassedTest) + " functions passed out of " + \
         str(nFunctionsTested))
+    countAll()
     nFunctionsPassedTest = 0
     nFunctionsTested = 0    
     return
 
 global storeName
-storeName = "mystore"
 global connectionString
-connectionString = "localhost:5000"
+global kvclientpath
 global store
 global myKey
 global myValue
@@ -446,4 +461,9 @@ errorMessage = ""
 positiveMessage = ""
 nFunctionsPassedTest = 0
 nFunctionsTested = 0
+# Defaults.
+storeName = "mystore"
+connectionString = "localhost:5000"
+kvclientpath = "/opt/kv-1.2.123/lib/kvclient-1.2.123.jar"
+# Start.
 main()
