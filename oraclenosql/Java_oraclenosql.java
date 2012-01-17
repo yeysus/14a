@@ -17,6 +17,12 @@ import java.io.*;
 
 // javac -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.java
 // java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql
+//       [arguments]
+// Arguments are: -s store_name
+//                -h host_name
+//                -p port
+//                -e encoding
+//                -t
 
 // Heavily modified from HelloBigDataWorld.java and the Getting Started
 // documentation from Oracle's distribution of 
@@ -56,14 +62,14 @@ public class Java_oraclenosql {
     
     public Java_oraclenosql (String[] argv) {
 
-        //+++TODO; NOT TRIED.
         int nArgs = argv.length;
         int argc = 0;
+        boolean isTest = false;
 
         while (argc < nArgs) {
             final String arg = argv[argc++];
 
-            if (arg.equals ("-storeName")) {
+            if (arg.equals ("-s")) {
                 if (argc < nArgs) {
                     storeName = argv[argc++];
                 } else {
@@ -71,27 +77,29 @@ public class Java_oraclenosql {
                     // True means the program will abort after printing.
                     _printErrorMessage ("True");
                 }
-            } else if (arg.equals ("-hostName")) {
+            } else if (arg.equals ("-h")) {
                 if (argc < nArgs) {
                     hostName = argv[argc++];
                 } else {
                     errorMessage = "hostName requires an argument";
                     _printErrorMessage ("True");
                 }
-            } else if (arg.equals ("-port")) {
+            } else if (arg.equals ("-p")) {
                 if (argc < nArgs) {
                     port = argv[argc++];
                 } else {
                     errorMessage = "port requires an argument";
                     _printErrorMessage ("True");
                 }
-            } else if (arg.equals ("-encoding")) {
+            } else if (arg.equals ("-e")) {
                 if (argc < nArgs) {
                     encoding = argv[argc++];
                 } else {
                     errorMessage = "encoding requires an argument";
                     _printErrorMessage ("True");
                 }
+            } else if (arg.equals ("-t")) {
+                isTest = true;
             } else if (arg.equals ("-operation")) {
                 if (argc < nArgs) {
                     operation = argv[argc++];
@@ -108,7 +116,7 @@ public class Java_oraclenosql {
                     _printErrorMessage ("True");
                 }
             } else {
-                errorMessage = "Argument unknown.";
+                errorMessage = "Argument " + arg + " unknown.";
                 _printErrorMessage ("False");
             }
         }
@@ -126,6 +134,10 @@ public class Java_oraclenosql {
         }
             
         if (nArgs == 0) {
+            System.out.println ("No arguments were given; using defaults");
+        }
+        
+        if (isTest) {
             // Run the tests.
             test ();
         }
@@ -135,18 +147,20 @@ public class Java_oraclenosql {
     }
     
     private void test () {
+        System.out.println ("Starting Tests.");
+        countAll (true);
+        countAll (false);
+        _evalPositiveMessage ("countAll");
         put ("MyTest/MComp2/-/mComp1/mComp2", "Johannes Läufer", false);
         _evalPositiveMessage ("put");
         get ("MyTest/MComp2/-/mComp1/mComp2", false);
         _evalPositiveMessage ("get"); 
-        countAll (false);
-        _evalPositiveMessage ("countAll");
         putIfAbsent ("MyTest/MComp2/-/mComp1/mComp3", "Juanito el Caminante", 
                      false);
         _evalPositiveMessage ("putIfAbsent");
         putIfPresent ("MyTest/MComp2/-/mComp1/mComp2","Johannes Läufer 2", false);
         _evalPositiveMessage ("putIfPresent");
-        storeIterator ("MyTest", true);
+        storeIterator ("MyTest", false);
         _evalPositiveMessage ("storeIterator");
         delete ("MyTest/MComp2/-/mComp1/mComp2", false);
         _evalPositiveMessage ("delete");
@@ -244,7 +258,7 @@ public class Java_oraclenosql {
 
     private void storeIterator (String keysString, boolean isPrintOutput) {
         // This only works for iterating over PARTIAL major components.
-        // Usage: storeIterator("Test/HelloWorld")
+        // Usage: storeIterator ("Test/HelloWorld")
 
         myKey = _prepareKey (keysString);
 
