@@ -63,7 +63,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
         -e encoding
         -t       
     
-    With the -t argument, the test function is executed. The test function calls put, get, putIfAbsent, putIfPresent, storeIterator, countAll.
+    With the -t argument, the test function is executed. The test function calls put, get, putIfAbsent, putIfPresent, storeIterator, countAll, delete. Two created records will be deleted before finishing.
 
 ### Usage (JRuby)
 1.  Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
