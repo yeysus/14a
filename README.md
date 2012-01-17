@@ -18,7 +18,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 
 1.  On a command prompt, type
 
-    /absolute/path/jython /absolute/path/Jython_oraclenosql.py -kvclientpath=/opt/kv-1.2.123/lib/kvclient-1.2.123.jar -test -storename=store_name -connectionstring=host:port
+    /absolute/path/jython /absolute/path/Jython_oraclenosql.py -kvclientpath=/opt/kv-1.2.123/lib/kvclient-1.2.123.jar -storename=store_name -connectionstring=host:port
  
     For interactive mode: add -i to jython's arguments:
     
@@ -52,11 +52,18 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 
 ### Usage (Java)
 1.  Navigate to the directory where the file Java_oraclenosql.java resides.
-2.  javac -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.java.
-3.  java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.
+2.  javac -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql.java
+3.  java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql [arguments]
 
 
-    The arguments are not tested yet, the program runs the test function which calls put, get, storeIterator, countAll.
+    Defaults can be changed in the script. The arguments are optional:
+        -s store_name
+        -h host_name
+        -p port
+        -e encoding
+        -t       
+    
+    With the -t argument, the test function is executed. The test function calls put, get, putIfAbsent, putIfPresent, storeIterator, countAll.
 
 ### Usage (JRuby)
 1.  Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
