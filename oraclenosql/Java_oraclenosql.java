@@ -9,9 +9,10 @@ import oracle.kv.Direction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.lang.Class;
-import java.lang.reflect.*;
-import java.io.*;
+import java.util.Arrays;
+// import java.lang.Class;
+// import java.lang.reflect.*;
+import java.io.*; // For PrintStream, FileOutputStream, FileDescriptor.
 
 // Go to the directory where Java_oraclenosql.java is and run with
 
@@ -21,8 +22,10 @@ import java.io.*;
 // Arguments are: -s store_name
 //                -h host_name
 //                -p port
-//                -e encoding
 //                -t
+//                -o "get(key)"
+// -t runs some tests and quits.
+// -o runs the argument as function.
 
 // Heavily modified from HelloBigDataWorld.java and the Getting Started
 // documentation from Oracle's distribution of 
@@ -38,8 +41,8 @@ import java.io.*;
 public class Java_oraclenosql {
  
     final KVStore store;
-    Key myKey;
-    Value myValue;
+    Key myKey = null;
+    Value myValue = null;
     String keysString = "";
     String valueString = "";
     String errorMessage = "";
@@ -48,9 +51,10 @@ public class Java_oraclenosql {
     String hostName = "localhost";
     String port = "5000";
     String operation = "";
-    String encoding = "ISO-8859-1";
+    // String encoding = "ISO-8859-1";
     int nFunctionsPassedTest = 0;
     int nFunctionsTested = 0;
+    boolean isTest = false;
 
     public static void main (String args[]) {
         try {
@@ -64,7 +68,6 @@ public class Java_oraclenosql {
 
         int nArgs = argv.length;
         int argc = 0;
-        boolean isTest = false;
 
         while (argc < nArgs) {
             final String arg = argv[argc++];
@@ -100,19 +103,11 @@ public class Java_oraclenosql {
                 }
             } else if (arg.equals ("-t")) {
                 isTest = true;
-            } else if (arg.equals ("-operation")) {
+            } else if (arg.equals ("-o")) {
                 if (argc < nArgs) {
                     operation = argv[argc++];
                 } else {
                     errorMessage = "operation requires an argument";
-                    _printErrorMessage ("True");
-                }
-            } else if (arg.equals ("-operationArgs")) {
-                if (argc < nArgs) {
-                    operation = argv[argc++];
-                } else {
-                    errorMessage = "operationArgs requires an argument";
-                    errorMessage += "enclosed in \"";
                     _printErrorMessage ("True");
                 }
             } else {
@@ -125,6 +120,8 @@ public class Java_oraclenosql {
             (new KVStoreConfig (storeName, hostName + ":" + port));
 
         // For decent output of non-English characters in the console.
+        // +++TODO. Not working now.
+        /*
         try {
             System.setOut (new PrintStream (new FileOutputStream (
                 FileDescriptor.out), true, encoding));
@@ -132,6 +129,7 @@ public class Java_oraclenosql {
             System.out.println ("The character encoding, " +
                 encoding + ", could not be set\n");              
         }
+        */
             
         if (nArgs == 0) {
             System.out.println ("No arguments were given; using defaults");
@@ -144,6 +142,42 @@ public class Java_oraclenosql {
         
         // Operate. +++TODO. User reflection to check if method exists.
         // But I don't want to use all of them. Also not reflection.
+        
+        if (operation != "") {
+            // operation must be in the form: function(arguments)
+            if ((operation.indexOf('(') > 0) && 
+                (operation.indexOf('(') < operation.indexOf(')'))) {
+                
+                // Get function name.
+                String functionName = 
+                    operation.substring (0, operation.indexOf ('('));
+                // Function name must be known.
+                // Determine if an element is in a java array:
+                // From http://stackoverflow.com/questions/1128723/
+                //   in-java-how-can-i-test-if-an-array-contains-a-certain-value
+                // bit.ly: http://bit.ly/yOOPLg
+                if (Arrays.asList ("get").contains (functionName)) {
+                    
+                    // Get arguments of functionName.                    
+                    String functionArgument =
+                        operation.substring (operation.indexOf ('(') + 1, 
+                                             operation.indexOf (')'));
+                    keysString = functionArgument;
+                    _storeFunctions (functionName, true);
+
+                    if (errorMessage != "") _printErrorMessage ("False");
+                } else {
+                    errorMessage = "Operation " + functionName + 
+                        " could not be identified.";
+                    _printErrorMessage ("False");
+                }                
+            } else {
+                errorMessage = 
+                    "Operation: " + operation + 
+                    " must be in the form: function(arg1, arg2, ...).";
+                _printErrorMessage ("False");                    
+            }
+        }
     }
     
     private void test () {
@@ -172,9 +206,8 @@ public class Java_oraclenosql {
         countAll (true);
     }
      
-    private Key _prepareKey (String keysString) {
+    private void _prepareKey () {
         // e.g. keysString = "Test/HelloWorld/Java/-/message_text"
-        // myKey contains either an error message or a Key.
 
         List<String> majorComponents = new ArrayList<String> ();
         List<String> minorComponents = new ArrayList<String> ();
@@ -182,17 +215,17 @@ public class Java_oraclenosql {
         String [] keysArray = keysString.split ("/");
         boolean isMajor = true;
         for (int i = 0; i < keysArray.length; i++) {
-            if (keysArray [i] == "-") {
+            if (keysArray [i].equals ("-")) {
                 isMajor = false;
+                continue;
             }
             if (isMajor) {
                 majorComponents.add (keysArray [i]);
             } else {
-                if (keysArray [i] != "-") {
-                    minorComponents.add (keysArray [i]);
-                }
+                minorComponents.add (keysArray [i]);
             }
         }
+
         if ((majorComponents.size () > 0) && (minorComponents.size () > 0)) {
             myKey = Key.createKey (majorComponents, minorComponents);
         } else if ((majorComponents.size () > 0) & (minorComponents.size () <= 0)) {
@@ -200,16 +233,14 @@ public class Java_oraclenosql {
         } else {
             errorMessage = "ERROR: The String could not be transformed to a Key.";
             _printErrorMessage ("False");
-            return null;
+            return;
         }
-        return myKey;
+        return;
     }
 
-    private void _storeFunctions (String what, String keysString, 
-                                  String valueString, boolean isPrintOutput) {
-        Class myStoreClass;
+    private void _storeFunctions (String what, boolean isPrintOutput) {
 
-        myKey = _prepareKey (keysString);
+        _prepareKey ();
         if (myKey == null) return;
          
         // +++TODO
@@ -232,6 +263,10 @@ public class Java_oraclenosql {
                 } else {
                     // If this is a test, assuming a proper key was put,
                     // it did not pass it.
+                    if (isPrintOutput) {
+                        System.out.println ("Key " + keysString + 
+                                            " could not be found.");
+                    }
                     return;
                 }
             } else if (what.equals ("put")) {
@@ -256,11 +291,11 @@ public class Java_oraclenosql {
         return;
     }
 
-    private void storeIterator (String keysString, boolean isPrintOutput) {
+    private void storeIterator (String thisKeysString, boolean isPrintOutput) {
         // This only works for iterating over PARTIAL major components.
         // Usage: storeIterator ("Test/HelloWorld")
-
-        myKey = _prepareKey (keysString);
+        keysString = thisKeysString;
+        _prepareKey ();
 
         //+++TODO.
         //_checkStore();
@@ -271,9 +306,9 @@ public class Java_oraclenosql {
             while (iterator.hasNext ()) {
                 Object object = iterator.next ();
                 KeyValueVersion keyValueVersion = (KeyValueVersion) object;
-                String key =  keyValueVersion.getKey ().toString ();
+                String key =  new String (keyValueVersion.getKey ().toString ());
                 String value = new String (keyValueVersion.getValue ().
-                                           getValue (), encoding);
+                                           getValue ());
                 if (isPrintOutput) System.out.println (key + ", "  + value);
             }
             positiveMessage = "storeIterator: passed";
@@ -299,31 +334,37 @@ public class Java_oraclenosql {
         }
     }
 
-    private void get (String keysString, boolean isPrintOutput) {
-        _storeFunctions ("get", keysString, "", isPrintOutput);
+    private void get (String thisKeysString, boolean isPrintOutput) {
+        keysString = thisKeysString;
+        _storeFunctions ("get", isPrintOutput);
         return;
     }
     
-    private void delete (String keysString, boolean isPrintOutput) {
-        _storeFunctions ("delete", keysString, "", isPrintOutput);
+    private void delete (String thisKeysString, boolean isPrintOutput) {
+        keysString = thisKeysString;
+        _storeFunctions ("delete", isPrintOutput);
         return;
     }
     
-    private void put (String keysString, String valueString, 
+    private void put (String thisKeysString, String thisValueString, 
                       boolean isPrintOutput) {
-        _storeFunctions ("put", keysString, valueString, isPrintOutput);
+        keysString = thisKeysString;
+        valueString = thisValueString;
+        _storeFunctions ("put", isPrintOutput);
         return;
     }
     
-    private void putIfPresent (String keysString, String valueString, 
+    private void putIfPresent (String thisKeysString, String valueString, 
                       boolean isPrintOutput) {  
-        _storeFunctions ("putIfPresent", keysString, valueString, isPrintOutput);
+        keysString = thisKeysString;
+        _storeFunctions ("putIfPresent", isPrintOutput);
         return;
     }
     
-    private void putIfAbsent (String keysString, String valueString, 
+    private void putIfAbsent (String thisKeysString, String valueString, 
                                boolean isPrintOutput) { 
-        _storeFunctions ("putIfAbsent", keysString, valueString, isPrintOutput);
+        keysString = thisKeysString;
+        _storeFunctions ("putIfAbsent", isPrintOutput);
         return;
     }
     
