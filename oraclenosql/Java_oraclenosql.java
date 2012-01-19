@@ -51,11 +51,11 @@ public class Java_oraclenosql {
     String storeName = "mystore";
     String hostName = "localhost";
     String port = "5000";
-    String operation = "";
     // String encoding = "ISO-8859-1";
     int nFunctionsPassedTest = 0;
     int nFunctionsTested = 0;
     boolean isTest = false;
+    boolean isInteractive = false;
 
     public static void main (String args[]) {
         try {
@@ -97,6 +97,8 @@ public class Java_oraclenosql {
                 }
             } else if (arg.equals ("-t")) {
                 isTest = true;
+            } else if (arg.equals ("-i")) {
+                isInteractive = true;
             } else {
                 errorMessage = "Argument " + arg + " unknown.";
                 _printErrorMessage ("False");
@@ -134,7 +136,7 @@ public class Java_oraclenosql {
         // Abandon with quit()
 		String operation = "";
         Scanner scanner = new Scanner (System.in);
-		while (true) {
+		while (isInteractive) {
 		    System.out.print (">>> ");
 			operation = scanner.nextLine ();
 		
