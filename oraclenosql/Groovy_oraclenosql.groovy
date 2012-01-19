@@ -26,7 +26,7 @@ class Groovy_oraclenosql {
     String hostName = "localhost"
     String port = "5000"
     String operation = ""
-    String encoding = "ISO-8859-1"
+    String encoding = "UTF-8"
     Integer nFunctionsPassedTest = 0
     Integer nFunctionsTested = 0
 
@@ -36,7 +36,6 @@ class Groovy_oraclenosql {
         } catch (Exception ex) {
             println (ex.toString ())
         }
-        println("Hello world")
     }
     
     public Groovy_oraclenosql () {
