@@ -11,9 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Scanner;
-// import java.lang.Class;
-// import java.lang.reflect.*;
-import java.io.*; // For PrintStream, FileOutputStream, FileDescriptor.
 
 // Go to the directory where Java_oraclenosql.java is and run with
 
@@ -24,9 +21,9 @@ import java.io.*; // For PrintStream, FileOutputStream, FileDescriptor.
 //                -h host_name
 //                -p port
 //                -t
-//                -o "get(key)"
+//                -i
 // -t runs some tests and quits.
-// -o runs the argument as function.
+// -i runs in interactive mode.
 
 // Heavily modified from HelloBigDataWorld.java and the Getting Started
 // documentation from Oracle's distribution of 
@@ -51,7 +48,7 @@ public class Java_oraclenosql {
     String storeName = "mystore";
     String hostName = "localhost";
     String port = "5000";
-    // String encoding = "ISO-8859-1";
+    String cliPrefix = ">>> ";
     int nFunctionsPassedTest = 0;
     int nFunctionsTested = 0;
     boolean isTest = false;
@@ -107,18 +104,6 @@ public class Java_oraclenosql {
         
         store = KVStoreFactory.getStore
             (new KVStoreConfig (storeName, hostName + ":" + port));
-
-        // For decent output of non-English characters in the console.
-        // +++TODO. Not working properly.
-        /*
-        try {
-            System.setOut (new PrintStream (new FileOutputStream (
-                FileDescriptor.out), true, encoding));
-        } catch (Exception ex) {
-            System.out.println ("The character encoding, " +
-                encoding + ", could not be set\n");              
-        }
-        */
             
         if (nArgs == 0) {
             System.out.println ("No arguments were given; using defaults");
@@ -129,54 +114,60 @@ public class Java_oraclenosql {
             test ();
         }
         
-        // Operate. +++TODO. User reflection to check if method exists.
-        // But I don't want to use all of them. Also not reflection.
-        
-		// Infinite loop for very simple command-line interface.
+		// Infinite loop for reading Strings from the console.
         // Abandon with quit()
 		String operation = "";
         Scanner scanner = new Scanner (System.in);
 		while (isInteractive) {
-		    System.out.print (">>> ");
+		    System.out.print (cliPrefix);
 			operation = scanner.nextLine ();
-		
-            if (operation != "") {
-                // operation must be in the form: function(arguments)
-                if ((operation.indexOf('(') > 0) && 
-                    (operation.indexOf('(') < operation.indexOf(')'))) {
-                
-                    // Get function name.
-                    String functionName = 
-                        operation.substring (0, operation.indexOf ('('));
-                    // Function name must be known.
-                    // Determine if an element is in a java array:
-                    // From http://stackoverflow.com/questions/1128723/
-                    //   in-java-how-can-i-test-if-an-array-contains-a-certain-value
-                    // bit.ly: http://bit.ly/yOOPLg
-                    if (Arrays.asList ("get").contains (functionName)) {
-                    
-                        // Get arguments of functionName.                    
-                        String functionArgument =
-                            operation.substring (operation.indexOf ('(') + 1, 
-                                                 operation.indexOf (')'));
-                        keysString = functionArgument;
-                        _storeFunctions (functionName, true);
 
-                        if (errorMessage != "") _printErrorMessage ("False");
-                    } else if (functionName.equals ("quit")) {
-                        scanner.close ();
-                        System.exit (0);
-                    } else {
-                        errorMessage = "Operation " + functionName + 
-                            " could not be identified.";
-                        _printErrorMessage ("False");
-                    }                
+            if (operation.equals ("")) {
+                continue;
+            }
+            
+            // operation must be in the form: function(arguments)
+            if ((operation.indexOf('(') > 0) && 
+                (operation.indexOf('(') < operation.indexOf(')'))) {
+                
+                // Get function name.
+                String functionName = 
+                    operation.substring (0, operation.indexOf ('(')).trim ();
+                // Function name must be known.
+                // Determine if an element is in a java array:
+                // In stackoverflow.com/questions/1128723/
+                // bit.ly: http://bit.ly/yOOPLg
+                if (Arrays.asList ("get", "delete", "countAll", "getAllKeys", "storeIterator").contains 
+                                                   (functionName)) {
+                    
+                    // Get arguments of functionName.                    
+                    String functionArgument =
+                        operation.substring (operation.indexOf ('(') + 1, 
+                                             operation.indexOf (')'));
+                    keysString = functionArgument;
+                    if (Arrays.asList ("get", "delete").contains 
+                                                       (functionName)) {
+                        _storeFunctions (functionName, true);
+                    } else if (functionName.equals ("countAll")) {
+                        countAll (true);
+                    } else if (functionName.equals ("getAllKeys")) {
+                        getAllKeys (true);
+                    } else if (functionName.equals ("storeIterator")) {
+                        storeIterator (functionArgument, true);
+                    }
+                    if (errorMessage != "") _printErrorMessage ("False");
+                } else if (functionName.equals ("quit")) {
+                    scanner.close ();
+                    System.exit (0);
                 } else {
-                    errorMessage = 
-                        "Operation: " + operation + 
-                        " must be in the form: function(arg1, arg2, ...).";
-                    _printErrorMessage ("False");                    
-                }
+                    errorMessage = "Operation " + functionName + 
+                        " could not be identified.";
+                    _printErrorMessage ("False");
+                }                
+            } else {
+                errorMessage = "Operation: " + operation + 
+                    " must be in the form: function(arg1, arg2, ...).";
+                _printErrorMessage ("False");
             }
 		}
     }
@@ -197,6 +188,8 @@ public class Java_oraclenosql {
         _evalPositiveMessage ("putIfPresent");
         storeIterator ("MyTest", false);
         _evalPositiveMessage ("storeIterator");
+        getAllKeys (false);
+        _evalPositiveMessage ("getAllKeys");
         delete ("MyTest/MComp2/-/mComp1/mComp2", false);
         _evalPositiveMessage ("delete");
         delete ("MyTest/MComp2/-/mComp1/mComp3", false);
@@ -331,6 +324,22 @@ public class Java_oraclenosql {
             positiveMessage = "countAll: passed";
         } catch (Exception ex) {
             errorMessage = "ERROR in countAll: " + ex.toString ();
+            _printErrorMessage ("False");
+        }
+    }
+    
+    private void getAllKeys (boolean isPrintOutput) {
+        try {
+            Iterator iterator = store.storeKeysIterator (Direction.UNORDERED, 0);
+            while (iterator.hasNext ()){        
+                Object object = iterator.next ();
+                Key thisKey = (Key) object;
+                String key =  new String (thisKey.toString ());
+                if (isPrintOutput) System.out.println (key);           
+            }
+            positiveMessage = "getAllKeys: passed";
+        } catch (Exception ex) {
+            errorMessage = "ERROR in getAllKeys: " + ex.toString ();
             _printErrorMessage ("False");
         }
     }
