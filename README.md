@@ -56,12 +56,7 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 3.  java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar Java_oraclenosql [arguments]
 
 
-    Defaults can be changed in the script. The arguments are optional:
-        * -s store_name
-        * -h host_name
-        * -p port
-        * -t    
-        * -i        
+    Defaults can be changed in the script. The arguments are optional: -s store_name -h host_name -p port -t  -i        
     
     With the -t argument, the test function is executed. The test function calls put, get, putIfAbsent, putIfPresent, storeIterator, countAll, getAllKeys, delete. Two created records will be deleted before finishing.
     
