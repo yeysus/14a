@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Scanner;
 // import java.lang.Class;
 // import java.lang.reflect.*;
 import java.io.*; // For PrintStream, FileOutputStream, FileDescriptor.
@@ -94,22 +95,8 @@ public class Java_oraclenosql {
                     errorMessage = "port requires an argument";
                     _printErrorMessage ("True");
                 }
-            } else if (arg.equals ("-e")) {
-                if (argc < nArgs) {
-                    encoding = argv[argc++];
-                } else {
-                    errorMessage = "encoding requires an argument";
-                    _printErrorMessage ("True");
-                }
             } else if (arg.equals ("-t")) {
                 isTest = true;
-            } else if (arg.equals ("-o")) {
-                if (argc < nArgs) {
-                    operation = argv[argc++];
-                } else {
-                    errorMessage = "operation requires an argument";
-                    _printErrorMessage ("True");
-                }
             } else {
                 errorMessage = "Argument " + arg + " unknown.";
                 _printErrorMessage ("False");
@@ -120,7 +107,7 @@ public class Java_oraclenosql {
             (new KVStoreConfig (storeName, hostName + ":" + port));
 
         // For decent output of non-English characters in the console.
-        // +++TODO. Not working now.
+        // +++TODO. Not working properly.
         /*
         try {
             System.setOut (new PrintStream (new FileOutputStream (
@@ -143,41 +130,53 @@ public class Java_oraclenosql {
         // Operate. +++TODO. User reflection to check if method exists.
         // But I don't want to use all of them. Also not reflection.
         
-        if (operation != "") {
-            // operation must be in the form: function(arguments)
-            if ((operation.indexOf('(') > 0) && 
-                (operation.indexOf('(') < operation.indexOf(')'))) {
+		// Infinite loop for very simple command-line interface.
+        // Abandon with quit()
+		String operation = "";
+        Scanner scanner = new Scanner (System.in);
+		while (true) {
+		    System.out.print (">>> ");
+			operation = scanner.nextLine ();
+		
+            if (operation != "") {
+                // operation must be in the form: function(arguments)
+                if ((operation.indexOf('(') > 0) && 
+                    (operation.indexOf('(') < operation.indexOf(')'))) {
                 
-                // Get function name.
-                String functionName = 
-                    operation.substring (0, operation.indexOf ('('));
-                // Function name must be known.
-                // Determine if an element is in a java array:
-                // From http://stackoverflow.com/questions/1128723/
-                //   in-java-how-can-i-test-if-an-array-contains-a-certain-value
-                // bit.ly: http://bit.ly/yOOPLg
-                if (Arrays.asList ("get").contains (functionName)) {
+                    // Get function name.
+                    String functionName = 
+                        operation.substring (0, operation.indexOf ('('));
+                    // Function name must be known.
+                    // Determine if an element is in a java array:
+                    // From http://stackoverflow.com/questions/1128723/
+                    //   in-java-how-can-i-test-if-an-array-contains-a-certain-value
+                    // bit.ly: http://bit.ly/yOOPLg
+                    if (Arrays.asList ("get").contains (functionName)) {
                     
-                    // Get arguments of functionName.                    
-                    String functionArgument =
-                        operation.substring (operation.indexOf ('(') + 1, 
-                                             operation.indexOf (')'));
-                    keysString = functionArgument;
-                    _storeFunctions (functionName, true);
+                        // Get arguments of functionName.                    
+                        String functionArgument =
+                            operation.substring (operation.indexOf ('(') + 1, 
+                                                 operation.indexOf (')'));
+                        keysString = functionArgument;
+                        _storeFunctions (functionName, true);
 
-                    if (errorMessage != "") _printErrorMessage ("False");
+                        if (errorMessage != "") _printErrorMessage ("False");
+                    } else if (functionName.equals ("quit")) {
+                        scanner.close ();
+                        System.exit (0);
+                    } else {
+                        errorMessage = "Operation " + functionName + 
+                            " could not be identified.";
+                        _printErrorMessage ("False");
+                    }                
                 } else {
-                    errorMessage = "Operation " + functionName + 
-                        " could not be identified.";
-                    _printErrorMessage ("False");
-                }                
-            } else {
-                errorMessage = 
-                    "Operation: " + operation + 
-                    " must be in the form: function(arg1, arg2, ...).";
-                _printErrorMessage ("False");                    
+                    errorMessage = 
+                        "Operation: " + operation + 
+                        " must be in the form: function(arg1, arg2, ...).";
+                    _printErrorMessage ("False");                    
+                }
             }
-        }
+		}
     }
     
     private void test () {
@@ -258,7 +257,7 @@ public class Java_oraclenosql {
                 if (valueVersion != null) {
                     // toString () from getValue ().getValue () does not work.
                     String myValueString = new String (valueVersion.getValue ().
-                                                       getValue (), encoding);
+                                                       getValue ());
                     if (isPrintOutput) System.out.println (myValueString);
                 } else {
                     // If this is a test, assuming a proper key was put,
