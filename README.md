@@ -83,7 +83,7 @@ Uwe, das ist fuer Dich.
 
     It runs some automatic tests (connect, put, get, delete, storeIterator).
     
-### Usage (Rhino).
+### Usage (Rhino)
 1.  Navigate to the directory where the file Rhino_oraclenosql.js is.
 2.  Identify where kvclient-1.2.123.jar and Rhino's js.jar are and modify the path below accordingly.
 3.  Run with java -cp .:/opt/kv-1.2.123/lib/kvclient-1.2.123.jar:/opt/rhino1_7R3/js.jar org.mozilla.javascript.tools.shell.Main Rhino_oraclenosql.js -s=store_name -h=host_name -p=port
