@@ -74,7 +74,7 @@ Uwe, das ist fuer Dich.
 1.  Modify the last lines of the file Clojure_oraclenosql.clj to reflect the environment.
 2.  Modify the script clj to reflect the classpath.
 3.  Navigate to the folder containing both scripts, "clj" and "Clojure_oraclenosql.clj".
-4.  Run with "./clj Clojure_oraclenosql.clj". It connects to the store, writes one value, reads it, and deletes the written value.
+4.  Run with "./clj Clojure_oraclenosql.clj". It connects to the store, writes one value, reads it, deletes the written value, and counts the number of records in the store.
 
 ### Usage (Groovy)
 1.  Modify the top lines of the script with the store name, host, port, encoding.
