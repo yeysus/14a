@@ -4,23 +4,22 @@
 
 ; Define functions using defn. The first word after defn is 
 ; the name of the function.
-; It seems to be that functions have to be defined above in the file 
-; and only then they can be called. 
+; It seems to be that functions have to be defined sequentially first
+; in the file and only then they can be called. 
 (defn connect [storeName connectionString]
     (println "Connecting.")
     ; To create an array: into-array.
     (def hosts (into-array [connectionString]))
     ; Error handling.
     ; prn is "print".
-    ;(try 
+    (try 
         (def kVStoreConfig (new KVStoreConfig storeName hosts))
         ; store = KVStoreFactory.getStore(kVStoreConfig)
         (def store (. KVStoreFactory getStore kVStoreConfig))
-        ;)
-   ; (catch Exception ex 
-   ;     (prn (.toString ex)))
-   ; (finally (prn "in fin"))
-   ; ) ; End of try-catch-finally block.
+    (catch Exception ex 
+        (prn (.toString ex)))
+    (finally (prn "Connected to KV store."))
+    ) ; End of try-catch-finally block.
 ) ; End of defn connect.
 
 (defn _prepareKey [keysString]
@@ -79,6 +78,33 @@
     )
 ) ; End of defn _storeFunctions.
 
+(defn count_all []
+    (try 
+        (def direction_unordered Direction/UNORDERED)
+        (def iterator (.storeKeysIterator store direction_unordered 0))
+        (loop [i 0]
+            (when (.hasNext iterator)
+                (def nRecords (+ i 1))
+                (.next iterator)           
+            (recur (inc i))))
+        (prn (str "Total number of Records: " nRecords))
+    (catch Exception ex 
+        (def errorMessage (.toString ex))
+        (prn (str "ERROR in count_all: " errorMessage)))
+    (finally ())
+    ) ; End of try-catch-finally block.
+) ; End of defn test.
+
+; test.
+; clojure already has a test function: #'clojure.core/test
+(defn testStore []
+    (_storeFunctions "put" "MyTest/HelloWorld/-/message_text" "Juanito el Caminante")
+    (_storeFunctions "get" "MyTest/HelloWorld/-/message_text" "")
+    (println myValueString)
+    (_storeFunctions "delete" "MyTest/HelloWorld/-/message_text" "")
+    (count_all)
+) ; End of defn test.
+
 ; Define global variables using def.
 (def errorMessage "")
 (def storeName "mystore")
@@ -86,10 +112,7 @@
 (def store)
 (println "Starting.")
 (connect storeName connectionString)
-(_storeFunctions "put" "MyTest/HelloWorld/-/message_text" "Juanito el Caminante")
-(_storeFunctions "get" "MyTest/HelloWorld/-/message_text" "")
-(println myValueString)
-(_storeFunctions "delete" "MyTest/HelloWorld/-/message_text" "")
+(testStore)
 
 
 
