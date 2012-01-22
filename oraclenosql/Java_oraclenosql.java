@@ -127,8 +127,8 @@ public class Java_oraclenosql {
             }
             
             // operation must be in the form: function(arguments)
-            if ((operation.indexOf('(') > 0) && 
-                (operation.indexOf('(') < operation.indexOf(')'))) {
+            if ((operation.indexOf ('(') > 0) && 
+                (operation.indexOf ('(') < operation.indexOf (')'))) {
                 
                 // Get function name.
                 String functionName = 
@@ -137,15 +137,21 @@ public class Java_oraclenosql {
                 // Determine if an element is in a java array:
                 // In stackoverflow.com/questions/1128723/
                 // bit.ly: http://bit.ly/yOOPLg
-                if (Arrays.asList ("get", "delete", "countAll", "getAllKeys", "storeIterator").contains 
+                if (Arrays.asList ("get", "delete", "put", "multiDelete", 
+                    "countAll", "getAllKeys", "storeIterator").contains 
                                                    (functionName)) {
                     
                     // Get arguments of functionName.                    
                     String functionArgument =
                         operation.substring (operation.indexOf ('(') + 1, 
                                              operation.indexOf (')'));
-                    keysString = functionArgument;
-                    if (Arrays.asList ("get", "delete").contains 
+                    if (functionArgument.indexOf (',') < 0) {
+                        keysString = functionArgument;
+                    } else {
+                        keysString = functionArgument.substring (0, functionArgument.indexOf (','));
+                        valueString = functionArgument.substring (functionArgument.indexOf (',') + 1);
+                    }
+                    if (Arrays.asList ("get", "delete", "put").contains 
                                                        (functionName)) {
                         _storeFunctions (functionName, true);
                     } else if (functionName.equals ("countAll")) {
@@ -192,7 +198,8 @@ public class Java_oraclenosql {
         _evalPositiveMessage ("getAllKeys");
         delete ("MyTest/MComp2/-/mComp1/mComp2", false);
         _evalPositiveMessage ("delete");
-        delete ("MyTest/MComp2/-/mComp1/mComp3", false);
+        multiDelete ("MyTest/MComp2", false);
+        _evalPositiveMessage ("multiDelete");
         System.out.println (nFunctionsPassedTest + " functions passed out of " +
                             nFunctionsTested);
         nFunctionsPassedTest = 0;
@@ -245,6 +252,9 @@ public class Java_oraclenosql {
         try {
             if (what.equals ("delete")) {
                 boolean isSuccess = store.delete (myKey);
+                if (isPrintOutput) System.out.println (isSuccess);
+            } else if (what.equals ("multiDelete")) {
+                int isSuccess = store.multiDelete (myKey, null, null);
                 if (isPrintOutput) System.out.println (isSuccess);
             } else if (what.equals ("get")) {
                 // store.get returns Null or the valueVersion.
@@ -353,6 +363,12 @@ public class Java_oraclenosql {
     private void delete (String thisKeysString, boolean isPrintOutput) {
         keysString = thisKeysString;
         _storeFunctions ("delete", isPrintOutput);
+        return;
+    }
+    
+    private void multiDelete (String thisKeysString, boolean isPrintOutput) {
+        keysString = thisKeysString;
+        _storeFunctions ("multiDelete", isPrintOutput);
         return;
     }
     
