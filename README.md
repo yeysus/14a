@@ -58,9 +58,9 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
 
     Defaults can be changed in the script. The arguments are optional: -s store_name -h host_name -p port -t  -i        
     
-    With the -t argument, the test function is executed. The test function calls put, get, putIfAbsent, putIfPresent, storeIterator, countAll, getAllKeys, delete. Two created records will be deleted before finishing.
+    With the -t argument, the test function is executed. The test function calls put, get, putIfAbsent, putIfPresent, storeIterator, countAll, getAllKeys, delete, multiDelete. Two created records will be deleted before finishing.
     
-    The -i argument starts a very simple read line capability. Only "get(key)", "delete(key)", "countAll()", "getAllKeys()", "storeIterator(partial_major_key_component)", work at this moment. Terminate with quit().
+    The -i argument starts a very simple read line capability. Only "put(key)", "get(key)", "delete(key)", "multiDelete(major_key_components)", "countAll()", "getAllKeys()", "storeIterator(partial_major_key_component)", work at this moment. Terminate with quit().
 
 ### Usage (JRuby)
 1.  Modify the last 2 lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
@@ -74,7 +74,7 @@ Uwe, das ist fuer Dich.
 1.  Modify the last lines of the file Clojure_oraclenosql.clj to reflect the environment.
 2.  Modify the script clj to reflect the classpath.
 3.  Navigate to the folder containing both scripts, "clj" and "Clojure_oraclenosql.clj".
-4.  Run with "./clj Clojure_oraclenosql.clj". It connects to the store, writes and reads one value.
+4.  Run with "./clj Clojure_oraclenosql.clj". It connects to the store, writes one value, reads it, and deletes the written value.
 
 ### Usage (Groovy)
 1.  Modify the top lines of the script with the store name, host, port, encoding.
