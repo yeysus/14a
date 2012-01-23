@@ -1,5 +1,6 @@
 require '/opt/kv-1.2.123/lib/kvclient-1.2.123.jar'
 require 'java'
+require 'optparse'
 
 java_import 'oracle.kv.KVStore'
 java_import 'oracle.kv.KVStoreConfig'
@@ -10,16 +11,17 @@ java_import 'oracle.kv.ValueVersion'
 java_import 'oracle.kv.Direction'
 java_import 'java.util.ArrayList'
 
-def connect(storeName, connectionString)
+def connect(store_name, host_name, port)
     # .to_java converts a Ruby array to a Java array.
     # (:string) specifies the type, otherwise it would be an
     #           array of objects.
-    hosts = [connectionString].to_java(:string)
+    connection_string = host_name + ':' + port
+    hosts = [connection_string].to_java(:string)
     begin
         # Use the keyword 'new' for constructors.
-        kVStoreConfig = KVStoreConfig.new(storeName, hosts)
+        kVStoreConfig = KVStoreConfig.new(store_name, hosts)
         $store = KVStoreFactory.getStore(kVStoreConfig)
-        message = "Connected to the Oracle NoSQL store: \"" + storeName + "\"."
+        message = "Connected to the Oracle NoSQL store: \"" + $store_name + "\"."
         puts message
         $positiveMessage = "connect: passed"
     rescue Exception => ex
@@ -137,8 +139,8 @@ def _evalPositiveMessage(what)
     return
 end
 
-def test(store_name, connection_string)
-    connect(store_name, connection_string)
+def test(store_name, host_name, port)
+    connect(store_name, host_name, port)
     _evalPositiveMessage("connect")
     countAll()
     _evalPositiveMessage("countAll")
@@ -154,6 +156,46 @@ def test(store_name, connection_string)
           $nFunctionsTested.to_s())
 end
 
+# Modified from http://ruby.about.com/od/advancedruby/a/optionparser.htm
+def parse_arguments()
+    optparse = OptionParser.new do|opts|
+        # Set a banner at the top of the help screen.
+        opts.banner = "Usage: Jruby_oraclenosql.rb [options]"
+
+        opts.on( '-S', '--Store arg', 'Store Name' ) do|arg|
+            $store_name = arg
+        end
+
+        opts.on( '-H', '--Host arg', 'Host Name') do|arg|
+            $host_name = arg
+        end
+        
+        opts.on( '-P', '--Port arg', 'Port') do|arg|
+            $port = arg
+        end
+
+        $options[:test] = false
+        opts.on( '-T', '--test', 'Test') do
+            $options[:test] = true
+        end        
+ 
+        opts.on( '-h', '--help', 'Help screen') do
+            puts opts
+            exit
+        end
+    end
+ 
+    begin
+        optparse.parse!
+        if ($options[:test]) 
+            test($store_name, $host, $port)
+        end
+    rescue OptionParser::InvalidOption => ex
+        #e.recover argv
+        puts "ERROR: Unknown argument; " + ex
+    end
+end
+
 # Ruby's global variables start with $.
 $errorMessage = ''
 $positiveMessage = ''
@@ -162,8 +204,11 @@ $nFunctionsTested = 0
 $myKey
 $myValue
 $store
-storeName = 'mystore'
-connectionString = 'localhost:5000'
-test(storeName, connectionString)
+$store_name = 'mystore'
+$host = 'localhost'
+$port = '5000'
+# options: command-line parameters.
+$options = {}
+parse_arguments()
 
 

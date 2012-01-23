@@ -63,8 +63,8 @@ Scripts to manipulate String data of an Oracle NoSQL database (community edition
     The -i argument starts a very simple read line capability. Only "put(key)", "get(key)", "delete(key)", "multiDelete(major_key_components)", "countAll()", "getAllKeys()", "storeIterator(partial_major_key_component)", work at this moment. Terminate with quit().
 
 ### Usage (JRuby)
-1.  Modify the last lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key).
-2.  Run: "/opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb"
+1.  Run: "/opt/jruby/bin/jruby /path/to/Jruby_oraclenosql.rb -S store_name -H host_name -p port -t" (-t is to run the test).
+2.  Optional: Modify the last lines of the file Jruby_oraclenosql.rb to suit the environment (store name, host, port, key) so the arguments do not need to be entered.
 
     "connect", "put", "get", "delete", "countAll", "test" (simply tests all other functions), are working.
 
