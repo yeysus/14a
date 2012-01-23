@@ -72,7 +72,7 @@ def _storeFunctions(what, keysString, valueString)
             if (!valueVersion.nil?)
                 valueVersionValueBytes = valueVersion.getValue().getValue()
             else
-                # +++TODO.
+                puts valueVersion
             end
             myValue = String.from_java_bytes valueVersionValueBytes
             puts myValue
@@ -120,6 +120,11 @@ def get(keysString)
     return
 end
 
+def delete(keysString)
+    _storeFunctions("delete", keysString, "")
+    return
+end
+
 def _evalPositiveMessage(what)
     if ($positiveMessage != "")
         puts ($positiveMessage)
@@ -141,6 +146,8 @@ def test(store_name, connection_string)
     _evalPositiveMessage("put")
     get("MyTest/MComp2/-/mComp1/mComp2")
     _evalPositiveMessage("get")
+    delete("MyTest/MComp2/-/mComp1/mComp2")
+    _evalPositiveMessage("delete")
     countAll()
     
     puts ($nFunctionsPassedTest.to_s() + " functions passed out of " + 
