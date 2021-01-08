@@ -1,4 +1,5 @@
 # Jython script to manipulate data in Oracle NoSQL databases, community edition.
+# Those were the days.
 # -*- coding: iso-8859-1 -*-
 import sys
 import jarray
@@ -422,13 +423,13 @@ def test(storeName, connectionString):
     _evalPositiveMessage()
     countAll()
     _evalPositiveMessage()
-    put("MyTest/MComp2/-/mComp1/mComp2","Johannes Läufer")
+    put("MyTest/MComp2/-/mComp1/mComp2","Johannes LÃ¤ufer")
     _evalPositiveMessage()
     get("MyTest/MComp2/-/mComp1/mComp2")
     _evalPositiveMessage()
     putIfAbsent("MyTest/MComp2/-/mComp1/mComp3","Juanito el Caminante")
     _evalPositiveMessage()
-    putIfPresent("MyTest/MComp2/-/mComp1/mComp2","Johannes LŠufer 2")
+    putIfPresent("MyTest/MComp2/-/mComp1/mComp2","Johannes LÂŠufer 2")
     _evalPositiveMessage()
     getAll()
     _evalPositiveMessage()
